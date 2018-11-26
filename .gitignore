@@ -3,7 +3,7 @@
 
 # Log file
 *.log
-
+.DS*
 # BlueJ files
 *.ctxt
 
@@ -20,3 +20,16 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+PTA/.idea/
+.DS_Store
+
+*.jar
+!PTA/soot-trunk.jar
+!PTA/vasco.jar
+!dataset/code/rt.jar
+!dataset/code/jce.jar
+
+PTA/result.txt
+PTA/out/
+PTA/sootOutput/

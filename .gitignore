@@ -24,3 +24,8 @@ hs_err_pid*
 
 PTA/.idea/
 .DS_Store
+
+*.jar
+!PTA/soot-trunk.jar
+!dataset/code/rt.jar
+!dataset/code/jce.jar

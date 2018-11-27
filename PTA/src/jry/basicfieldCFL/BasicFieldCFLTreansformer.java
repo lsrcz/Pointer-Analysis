@@ -1,5 +1,6 @@
 package jry.basicfieldCFL;
 
+import jry.util.CFLGraphBuilder;
 import jry.util.CallGraphGenerator;
 import soot.*;
 import soot.jimple.*;
@@ -7,7 +8,7 @@ import soot.jimple.*;
 import java.util.*;
 
 public class BasicFieldCFLTreansformer extends SceneTransformer {
-    BasicFieldCFLBuilder graphBuilder = new BasicFieldCFLBuilder();
+    CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
     Set<SootMethod> isVisited = new HashSet<SootMethod>();
     Map<Integer, Integer> queries = new TreeMap<Integer, Integer>();
     int totalNew = 0;
@@ -21,8 +22,22 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
         return var;
     }
 
-    int newAlloc(int id) {
-        return 1;
+    private void assignPar(SootMethod sMethod, List<Value> args) {
+        if (sMethod.hasActiveBody()) {
+            for (Unit unit : sMethod.getActiveBody().getUnits()) {
+                if (unit instanceof DefinitionStmt) {
+                    if (((DefinitionStmt) unit).getRightOp() instanceof ParameterRef) {
+                        ParameterRef right = (ParameterRef)((DefinitionStmt) unit).getRightOp();
+                        Local left = (Local)((DefinitionStmt) unit).getLeftOp();
+                        int where = right.getIndex();
+                        if (args.get(where) instanceof Local) {
+                            graphBuilder.addEdge(right, left, 3, 0);
+                            graphBuilder.addEdge(left, right, -3, 0);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void dfsMethod(SootMethod sMethod) {
@@ -46,7 +61,8 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                     } else {
                         List<SootMethod> nextMethods = CallGraphGenerator.resolveTarget(unit);
                         for (SootMethod nextMethod : nextMethods) {
-
+                            assignPar(nextMethod, ie.getArgs());
+                            dfsMethod(nextMethod);
                         }
                     }
                 } else {
@@ -72,6 +88,7 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                             Local base = (Local)((InstanceFieldRef) right).getBase();
                             graphBuilder.addEdge(base, left, -4, ((InstanceFieldRef) right).getFieldRef());
                             graphBuilder.addEdge(left, base, 5, ((InstanceFieldRef) right).getFieldRef());
+                        } else if (right instanceof ParameterRef) {
                         } else {
                             assert false;
                         }

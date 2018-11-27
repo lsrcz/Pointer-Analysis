@@ -47,6 +47,7 @@ class LocalMapPrinter extends SceneTransformer {
                     if (unit instanceof DefinitionStmt) {
                         Value lvar = ((DefinitionStmt) unit).getLeftOp();
                         System.out.println("Find DefinitionStmt: " + unit);
+                        System.out.println(((DefinitionStmt) unit).getRightOp().getClass());
                         if (lvar instanceof Local) {
                             Local var = (Local) lvar;
                             System.out.println("Find Local: " + unit);

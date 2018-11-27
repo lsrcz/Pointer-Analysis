@@ -2,11 +2,13 @@ package jry.util;
 
 import java.util.*;
 
-public abstract class CFLGraphBuilder {
+public class CFLGraphBuilder {
     CFLGraph graph = new CFLGraph();
     Map<Integer, Integer> allocId = new HashMap<Integer, Integer>();
     Map<Object, Integer> valueId = new HashMap<Object, Integer>();
+    Map<Object, Integer> Id = new HashMap<Object, Integer>();
     int totalValue = 0;
+    int totalId = 0;
 
     int getValueId(Object obj) {
         if (valueId.containsKey(obj)) {
@@ -18,7 +20,15 @@ public abstract class CFLGraphBuilder {
         }
     }
 
-    public abstract Integer getId(Object obj);
+    public Integer getId(Object obj) {
+        if (Id.containsKey(obj)) {
+            return Id.get(obj);
+        } else {
+            totalId += 1;
+            Id.put(obj, totalId);
+            return totalId;
+        }
+    }
 
     public void assignAllocId(Object obj, Integer id) {
         int nodeId = getId(obj);

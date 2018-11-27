@@ -18,8 +18,10 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
     private FlowSet<Local> allLocals;
     private HashMap<Local, Integer> allocIDs;
 
-    public FlowSentitiveAnderson(UnitGraph g) {
-        super(g);
+    public FlowSentitiveAnderson(Body b) {
+        super(new ExceptionalUnitGraph(b));
+        ExceptionalUnitGraph g = (ExceptionalUnitGraph)super.graph;
+
         Chain<Local> locs = g.getBody().getLocals();
         int allocID = -1;
         allocIDs = new HashMap<>();
@@ -40,7 +42,8 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
             allLocals.add(x);
         }
         doAnalysis();
-        System.err.println(g.getBody());
+
+        System.out.println(b.getMethod().getName());
         for (Unit u: unitToAfterFlow.keySet()) {
             if (u instanceof InvokeStmt) {
                 InvokeExpr expr = ((InvokeStmt)u).getInvokeExpr();
@@ -108,7 +111,7 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
                 new Transform("jtp.fsa", new BodyTransformer() {
                     @Override
                     protected void internalTransform(Body body, String s, Map<String, String> map) {
-                        new FlowSentitiveAnderson(new ExceptionalUnitGraph(body));
+                        new FlowSentitiveAnderson(body);
                     }
                 })
         );

@@ -1,5 +1,4 @@
 import basic.PointsToAnalysis;
-import vasco.callgraph.*;
 
 public class Main {
 

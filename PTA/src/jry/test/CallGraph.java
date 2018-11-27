@@ -1,7 +1,5 @@
-package jry;
+package jry.test;
 
-import basic.BasicProgramTransformer;
-import basic.PointsToAnalysis;
 import soot.*;
 import soot.jimple.toolkits.callgraph.Edge;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
@@ -15,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 class CallGraphPrinter extends SceneTransformer {
-    private List<SootMethod> resolveTargets(SootMethod sMethod, Unit unit) {
+    private List<SootMethod> resolveTargets(Unit unit) {
         List<SootMethod> targets = new LinkedList<>();
         Iterator iterator = Scene.v().getCallGraph().edgesOutOf(unit);
         while (iterator.hasNext()) {
@@ -44,7 +42,7 @@ class CallGraphPrinter extends SceneTransformer {
             SootMethod sMethod = qReader.next().method();
             if (sMethod.hasActiveBody()) {
                 for (Unit unit : sMethod.getActiveBody().getUnits()) {
-                    List<SootMethod> targets = resolveTargets(sMethod, unit);
+                    List<SootMethod> targets = resolveTargets(unit);
                     if (!targets.isEmpty()) {
                         printCallGraph(sMethod, unit, targets);
                     }

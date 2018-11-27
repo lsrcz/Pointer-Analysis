@@ -68,6 +68,17 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
         return ret;
     }
 
+    private Local getLocal(Value value) {
+        if (value instanceof Local)
+            return (Local)value;
+        if (value instanceof InstanceFieldRef) {
+            InstanceFieldRef ref = (InstanceFieldRef)value;
+            if (ref.getBase() instanceof Local)
+                return (Local)ref.getBase();
+        }
+        return null;
+    }
+
     @Override
     protected void flowThrough(HashMap<Local, FlowSet<Integer>> localFlowSetHashMap, Unit unit, HashMap<Local, FlowSet<Integer>> a1) {
         for (Local x: localFlowSetHashMap.keySet()) {
@@ -76,17 +87,17 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
         }
         if (unit instanceof AssignStmt) {
             AssignStmt stmt = (AssignStmt)unit;
-            if (stmt.getLeftOp() instanceof Local) {
-                Local lc = (Local) stmt.getLeftOp();
-                if (stmt.getRightOp() instanceof NewExpr) {
-                    a1.put(lc, new ArraySparseSet<>());
-                    a1.get(lc).add(allocIDs.get(lc));
-                    int i = 0;
-                }
-                if (stmt.getRightOp() instanceof Local) {
-                    a1.get(lc).union(localFlowSetHashMap.get((Local) stmt.getRightOp()));
-                    int i = 0;
-                }
+            Local lc = getLocal(stmt.getLeftOp());
+            if (lc == null)
+                return;
+            if (stmt.getRightOp() instanceof NewExpr) {
+                a1.put(lc, new ArraySparseSet<>());
+                a1.get(lc).add(allocIDs.get(lc));
+                int i = 0;
+            }
+            if (stmt.getRightOp() instanceof Local || stmt.getRightOp() instanceof FieldRef) {
+                Local rc = getLocal(stmt.getRightOp());
+                a1.get(lc).union(localFlowSetHashMap.get(rc));
             }
         }
 
@@ -120,7 +131,7 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.Hello";
+        String className = "test.FieldSensitivity";
         //soot.Main.main(new String[] {"--help"});
         soot.Main.main(new String[]{
                 "-w",

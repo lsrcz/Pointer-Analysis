@@ -97,7 +97,8 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
             }
             if (stmt.getRightOp() instanceof Local || stmt.getRightOp() instanceof FieldRef) {
                 Local rc = getLocal(stmt.getRightOp());
-                a1.get(lc).union(localFlowSetHashMap.get(rc));
+                localFlowSetHashMap.get(rc).copy(a1.get(lc));
+                // a1.get(lc).union(localFlowSetHashMap.get(rc));
             }
         }
 
@@ -131,7 +132,7 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.FieldSensitivity";
+        String className = "test.FlowSensitivity";
         //soot.Main.main(new String[] {"--help"});
         soot.Main.main(new String[]{
                 "-w",

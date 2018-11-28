@@ -29,7 +29,7 @@ public class CFLReachbilitySolver {
     }
 
     public void tryExtend(CFLGraph.GraphEdge edge) {
-        System.out.println("[NewEdge] " + edge.u.id + "->" + edge.v.id + " " + names.get(edge.type));
+        // System.out.println("[NewEdge] " + edge.u.id + "->" + edge.v.id + " " + names.get(edge.type) + " " + edge.value);
         for (Rule rootRule: rules) {
             if (rootRule instanceof BasicRule) {
                 BasicRule rule = (BasicRule)rootRule;
@@ -41,7 +41,7 @@ public class CFLReachbilitySolver {
                     }
                 }
                 if (edge.type == rule.typeR) {
-                    List<CFLGraph.GraphEdge> inEdges = edge.u.getInByType(rule.typeR);
+                    List<CFLGraph.GraphEdge> inEdges = edge.u.getInByType(rule.typeL);
                     for (CFLGraph.GraphEdge inEdge : inEdges) {
                         CFLGraph.GraphEdge newEdge = graph.initEdge(inEdge.u, edge.v, rule.typeS, 0);
                         if (graph.addEdge(newEdge)) Q.add(newEdge);

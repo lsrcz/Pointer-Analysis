@@ -1,17 +1,20 @@
 package jry.basicfieldCFL;
 
 import jry.util.CFLGraphBuilder;
+import jry.util.CFLLib;
 import jry.util.CallGraphGenerator;
 import soot.*;
 import soot.jimple.*;
+import soot.toolkits.scalar.ArraySparseSet;
 
 import java.util.*;
 
 public class BasicFieldCFLTreansformer extends SceneTransformer {
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
     Set<SootMethod> isVisited = new HashSet<SootMethod>();
-    Map<Integer, Integer> queries = new TreeMap<Integer, Integer>();
+    Map<Integer, Local> queries = new TreeMap<Integer, Local>();
     int totalNew = 0;
+    public Map<Integer, ArraySparseSet<Integer>> result = new TreeMap<Integer, ArraySparseSet<Integer>>();
 
     private Object getValue(Value var) {
         if (var instanceof ArrayRef) {
@@ -31,8 +34,9 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                         Local left = (Local)((DefinitionStmt) unit).getLeftOp();
                         int where = right.getIndex();
                         if (args.get(where) instanceof Local) {
-                            graphBuilder.addEdge(right, left, 3, 0);
-                            graphBuilder.addEdge(left, right, -3, 0);
+                            // System.out.println("    [Link] " + left + " " + args.get(where));
+                            graphBuilder.addEdge(args.get(where), left, 3, 0);
+                            graphBuilder.addEdge(left, args.get(where), -3, 0);
                         }
                     }
                 }
@@ -44,10 +48,13 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
         if (isVisited.contains(sMethod)) {
             return;
         }
+        System.out.println("[New Method] " + sMethod);
         isVisited.add(sMethod);
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
+            System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
+                // System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
@@ -57,9 +64,14 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                     } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
                         Local var = (Local)ie.getArgs().get(1);
                         int id = ((IntConstant)ie.getArgs().get(0)).value;
-                        queries.put(graphBuilder.getId(var), id);
+                        queries.put(id, var);
                     } else {
                         List<SootMethod> nextMethods = CallGraphGenerator.resolveTarget(unit);
+
+                        /*for (SootMethod nextMethod : nextMethods) {
+                            System.out.println("    [Candidate] " + nextMethod);
+                        }*/
+
                         for (SootMethod nextMethod : nextMethods) {
                             assignPar(nextMethod, ie.getArgs());
                             dfsMethod(nextMethod);
@@ -102,5 +114,9 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
     protected void internalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
         dfsMethod(mainMethod);
+        graphBuilder.doAnalysis(CFLLib.FieldCFL, CFLLib.FieldCFLName);
+        for (Map.Entry<Integer, Local> entry : queries.entrySet()) {
+            result.put(entry.getKey(), graphBuilder.getPointTo(entry.getValue(), -2));
+        }
     }
 }

@@ -21,13 +21,15 @@ class SpecialRule extends Rule{
 
 public class CFLReachbilitySolver {
     public List<Rule> rules;
+    public Map<Integer, String> names;
     public CFLGraph graph;
     Queue<CFLGraph.GraphEdge> Q = new LinkedList<>();
-    public CFLReachbilitySolver(List<Rule> _rules, CFLGraph _graph) {
-        graph = _graph; rules = _rules;
+    public CFLReachbilitySolver(List<Rule> _rules, Map<Integer, String> _names, CFLGraph _graph) {
+        graph = _graph; rules = _rules; names = _names;
     }
 
     public void tryExtend(CFLGraph.GraphEdge edge) {
+        System.out.println("[NewEdge] " + edge.u.id + "->" + edge.v.id + " " + names.get(edge.type));
         for (Rule rootRule: rules) {
             if (rootRule instanceof BasicRule) {
                 BasicRule rule = (BasicRule)rootRule;

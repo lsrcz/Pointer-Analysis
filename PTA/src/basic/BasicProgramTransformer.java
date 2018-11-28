@@ -49,7 +49,7 @@ public class BasicProgramTransformer extends SceneTransformer {
 
         String answer = "";
         for (Map.Entry<Integer, Local> entry: queries.entrySet()) {
-            answer += entry.getKey() + ":" + allAllocs + "\n";
+            answer += entry.getKey() + " " + allAllocs + "\n";
         }
         AnswerPrinter.printAnswer(answer);
     }

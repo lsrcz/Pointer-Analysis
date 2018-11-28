@@ -1,6 +1,7 @@
 package jry;
 
 import jry.basicfieldCFL.BasicFieldCFLTreansformer;
+import jry.util.ResultOperator;
 import soot.PackManager;
 import soot.Transform;
 import vasco.callgraph.CallGraphTransformer;
@@ -10,8 +11,8 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) {
-        String dir = "code/src";
-        String className = "LocalTest";
+        String dir = "../dataset/code";
+        String className = "test.Hello";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
@@ -30,7 +31,10 @@ public class Main {
         };
         System.out.println(classPath);
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", new BasicFieldCFLTreansformer()));
+        BasicFieldCFLTreansformer fCFL = new BasicFieldCFLTreansformer();
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", fCFL));
         soot.Main.main(sootArgs);
+        ResultOperator result = new ResultOperator(fCFL.result);
+        System.out.println(result);
     }
 }

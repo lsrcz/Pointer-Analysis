@@ -1,5 +1,8 @@
 package jry.util;
 
+import soot.toolkits.scalar.ArraySparseSet;
+
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class CFLGraphBuilder {
@@ -25,6 +28,7 @@ public class CFLGraphBuilder {
             return Id.get(obj);
         } else {
             totalId += 1;
+            System.out.println("[NewNode] " + totalId + " " + obj);
             Id.put(obj, totalId);
             return totalId;
         }
@@ -38,22 +42,25 @@ public class CFLGraphBuilder {
     public void addEdge(Object u, Object v, Integer type, Object value) {
         CFLGraph.GraphNode uNode = graph.getNode(getId(u));
         CFLGraph.GraphNode vNode = graph.getNode(getId(v));
+        System.out.println(uNode.id + " " + vNode.id);
         CFLGraph.GraphEdge edge = graph.initEdge(uNode, vNode, type, getValueId(value));
+        // System.out.println(edge.u + " " + edge.v + " " + edge.type + " " + edge.value);
         graph.addEdge(edge);
     }
 
-    public List<Integer> getPointTo(Object u, int type) {
+    public ArraySparseSet<Integer> getPointTo(Object u, int type) {
         List<Integer> nodeId = graph.query(graph.getNode(getId(u)), type);
-        Set<Integer> resultSet = new TreeSet<Integer>();
+        ArraySparseSet<Integer> resultSet = new ArraySparseSet<>();
         for (Integer id : nodeId) {
             if (allocId.containsKey(id)) {
                 resultSet.add(allocId.get(id));
             } else resultSet.add(0);
         }
-        List<Integer> result = new LinkedList<>();
-        for (Integer id : resultSet) {
-            result.add(id);
-        }
-        return result;
+        return resultSet;
+    }
+
+    public void doAnalysis(List<Rule> rules, Map<Integer, String> names) {
+        CFLReachbilitySolver solver = new CFLReachbilitySolver(rules, names, graph);
+        solver.doAnalysis();
     }
 }

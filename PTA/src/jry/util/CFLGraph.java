@@ -35,7 +35,7 @@ public class CFLGraph {
             if (!map.containsKey(key)) {
                 map.put(key, new LinkedList<>());
             }
-            outByType.get(key).add(edge);
+            ((List<GraphEdge>)map.get(key)).add(edge);
         }
 
         public void addOutEdge(GraphEdge edge) {
@@ -53,19 +53,18 @@ public class CFLGraph {
         }
 
         public List<GraphEdge> getOutByType(int type) {
+            if (!outByType.containsKey(type)) return new LinkedList<GraphEdge>();
             return outByType.get(type);
         }
 
         public List<GraphEdge> getOutByValue(int type, Integer value) {
+            if (!outByValue.containsKey(getString(type, value))) return new LinkedList<GraphEdge>();
             return outByValue.get(getString(type, value));
         }
 
         public List<GraphEdge> getInByType(int type) {
+            if (!inByType.containsKey(type)) return new LinkedList<GraphEdge>();
             return inByType.get(type);
-        }
-
-        public List<GraphEdge> getInByValue(int type, Integer value) {
-            return inByValue.get(getString(type, value));
         }
     }
 

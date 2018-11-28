@@ -1,11 +1,8 @@
 package jry.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
-public class CFLlib {
+public class CFLLib {
     /*
     FlowTo = new (assign | put[f] Alias get[f]) *
     PointsTo = (c_assign | c_get[f] Alias c_put[f]) * c_new
@@ -29,7 +26,7 @@ public class CFLlib {
     c_get[f] = 5
     c_put[f] = -5
      */
-    public List<Rule> FieldSFL = new ArrayList<Rule>(Arrays.asList(
+    public static List<Rule> FieldCFL = new ArrayList<Rule>(Arrays.asList(
             new BasicRule(2, 1, 3),
             new BasicRule(3, 3, 3),
             new SpecialRule(3, 0, 4),
@@ -38,5 +35,12 @@ public class CFLlib {
             new SpecialRule(-3, 0, 5),
             new BasicRule(0, -2, 2)
     ));
+
+    public static HashMap<Integer, String > FieldCFLName = new HashMap<Integer, String>(){{
+        put(0, "Alias"); put(1, "new"); put(-1, "c_new");
+        put(2, "FlowTo"); put(-2, "PointsTo"); put(3, "assign");
+        put(-3, "c_assign"); put(4, "put[f]"); put(-4, "get[f]");
+        put(5, "c_get[f]"); put(-5, "c_put[f]");
+    }};
 
 }

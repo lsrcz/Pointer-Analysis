@@ -11,8 +11,8 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) {
-        String dir = "../dataset/code";
-        String className = "test.Hello";
+        String dir = "resources";
+        String className = "test.FieldSensitivity";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";

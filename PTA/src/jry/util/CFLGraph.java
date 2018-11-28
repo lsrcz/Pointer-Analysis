@@ -76,6 +76,11 @@ public class CFLGraph {
             u = _u; v = _v; type = _type; value = _value;
         }
 
+        @Override
+        public int hashCode() {
+            return toString().hashCode();
+        }
+
         public String toString() {
             return u.toString() + "," + v.toString() + "," + type + "," + value;
         }

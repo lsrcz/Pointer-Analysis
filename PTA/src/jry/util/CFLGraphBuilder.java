@@ -28,7 +28,10 @@ public class CFLGraphBuilder {
             return Id.get(obj);
         } else {
             totalId += 1;
-            System.out.println("[NewNode] " + totalId + " " + obj);
+            // System.out.println("[NewNode] " + totalId + " " + obj + " " + obj.getClass());
+            /*for (Map.Entry<Object, Integer> entry : Id.entrySet()) {
+                System.out.println(entry.getKey() + " " + entry.getKey().getClass() + " " + entry.getKey().equals(obj));
+            }*/
             Id.put(obj, totalId);
             return totalId;
         }
@@ -42,7 +45,7 @@ public class CFLGraphBuilder {
     public void addEdge(Object u, Object v, Integer type, Object value) {
         CFLGraph.GraphNode uNode = graph.getNode(getId(u));
         CFLGraph.GraphNode vNode = graph.getNode(getId(v));
-        System.out.println(uNode.id + " " + vNode.id);
+        // System.out.println(uNode.id + " " + vNode.id);
         CFLGraph.GraphEdge edge = graph.initEdge(uNode, vNode, type, getValueId(value));
         // System.out.println(edge.u + " " + edge.v + " " + edge.type + " " + edge.value);
         graph.addEdge(edge);

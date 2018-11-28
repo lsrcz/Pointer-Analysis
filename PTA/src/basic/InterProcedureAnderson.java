@@ -19,6 +19,10 @@ import java.util.Map;
 public class InterProcedureAnderson extends ForwardInterProceduralAnalysis<SootMethod, Unit, Map<Local, FlowSet<NewExpr>>> {
     private static final Local RETURN_LOCAL = new JimpleLocal("@return", IntType.v());
 
+    public InterProcedureAnderson() {
+        verbose = true;
+    }
+
     private Local getLocal(Value value) {
         if (value instanceof Local)
             return (Local)value;

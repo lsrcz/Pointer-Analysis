@@ -27,8 +27,7 @@ PTA/.idea/
 *.jar
 !PTA/soot-trunk.jar
 !PTA/vasco.jar
-!dataset/code/rt.jar
-!dataset/code/jce.jar
+!PTA/resources/*
 
 PTA/result.txt
 PTA/out/

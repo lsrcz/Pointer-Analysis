@@ -24,7 +24,7 @@ public class InterProcedureAndersonTrans extends SceneTransformer {
         InterProcedureAndersonTrans ipat = new InterProcedureAndersonTrans();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
-        String dir = "../dataset/code";
+        String dir = "./resources";
         String classpath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";

@@ -50,11 +50,24 @@ class AssignInstanceConstraint {
 	}
 }
 
+class InstanceAssignInstanceConstraint {
+	// Forall x in a, Forall y in b, x.c >= y.d
+	Object a, b;
+	SootField c, d;
+	InstanceAssignInstanceConstraint(Object a, Object b, SootField c, SootField d) {
+		this.a = a;
+		this.b = b;
+		this.c = c;
+		this.d = d;
+	}
+}
+
 public class Anderson {
 	private List<AssignConstraint> assignConstraintList = new ArrayList<AssignConstraint>();
 	private List<NewConstraint> newConstraintList = new ArrayList<NewConstraint>();
 	private List<InstanceAssignConstraint> instanceAssignConstraintList = new ArrayList<InstanceAssignConstraint>();
 	private List<AssignInstanceConstraint> assignInstanceConstraintList = new ArrayList<AssignInstanceConstraint>();
+	private List<InstanceAssignInstanceConstraint> instanceAssignInstanceConstraintList = new ArrayList<InstanceAssignInstanceConstraint>();
 	Map<Object, TreeSet<Integer>> pts = new HashMap<Object, TreeSet<Integer>>();
 	void addAssignConstraint(Object from, Object to) {
 		assignConstraintList.add(new AssignConstraint(from, to));
@@ -64,6 +77,7 @@ public class Anderson {
 	}
 	void addInstanceAssignConstraint(Object a, Object b, SootField c) { instanceAssignConstraintList.add(new InstanceAssignConstraint(a, b, c)); }
 	void addAssignInstanceConstraint(Object a, Object b, SootField c) { assignInstanceConstraintList.add(new AssignInstanceConstraint(a, b, c)); }
+	void addInstanceAssignInstanceConstraint(Object a, Object b, SootField c, SootField d) { instanceAssignInstanceConstraintList.add(new InstanceAssignInstanceConstraint(a, b, c, d)); }
 	void run() {
 		for (NewConstraint nc : newConstraintList) {
 			if (!pts.containsKey(nc.to)) {
@@ -115,6 +129,26 @@ public class Anderson {
 					}
 					if (pts.get(ac.a).addAll(pts.get(p))) {
 						flag = true;
+					}
+				}
+			}
+			for (InstanceAssignInstanceConstraint ac : instanceAssignInstanceConstraintList) {
+				if (!pts.containsKey(ac.b)) {
+					continue;
+				}
+				for (Integer x : pts.get(ac.a)) {
+					Pair<Integer, SootField> p = new Pair<Integer, SootField>(x, ac.c);
+					if (!pts.containsKey(p)) {
+						pts.put(p, new TreeSet<Integer>());
+					}
+					for (Integer y : pts.get(ac.b)) {
+						Pair<Integer, SootField> q = new Pair<Integer, SootField>(y, ac.d);
+						if (!pts.containsKey(q)) {
+							continue;
+						}
+						if (pts.get(p).addAll(pts.get(q))) {
+							flag = true;
+						}
 					}
 				}
 			}

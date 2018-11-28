@@ -11,7 +11,7 @@ public class PointsToAnalysis {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", new BasicProgramTransformer()));
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", new FieldSensitiveTransformer()));
         soot.Main.main(new String[] {
                 "-w",
                 //"-p", "cg.spark", "enabled:true",

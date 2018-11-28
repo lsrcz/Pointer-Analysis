@@ -106,6 +106,15 @@ public class FieldSensitiveTransformer extends SceneTransformer {
                                 anderson.addAssignInstanceConstraint((Object) ((DefinitionStmt) current).getLeftOp(), (Object) base, field);
                             }
                         }
+                        if (((DefinitionStmt)current).getLeftOp() instanceof InstanceFieldRef && ((DefinitionStmt)current).getRightOp() instanceof InstanceFieldRef) {
+                            Value baseL = ((InstanceFieldRef)((DefinitionStmt)current).getLeftOp()).getBase();
+                            SootField fieldL = ((InstanceFieldRef)((DefinitionStmt)current).getLeftOp()).getField();
+                            Value baseR = ((InstanceFieldRef)((DefinitionStmt)current).getRightOp()).getBase();
+                            SootField fieldR = ((InstanceFieldRef)((DefinitionStmt)current).getRightOp()).getField();
+                            if (baseL instanceof Local && baseR instanceof Local) {
+                                anderson.addInstanceAssignInstanceConstraint(baseL, baseR, fieldL, fieldR);
+                            }
+                        }
                     }
                 }
             }

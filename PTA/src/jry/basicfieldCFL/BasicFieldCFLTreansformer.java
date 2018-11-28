@@ -50,6 +50,7 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
         }
         System.out.println("[New Method] " + sMethod);
         isVisited.add(sMethod);
+        Set<SootMethod> callMethods = new HashSet<SootMethod>();
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             System.out.println(sMethod.getActiveBody());
@@ -74,7 +75,7 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
 
                         for (SootMethod nextMethod : nextMethods) {
                             assignPar(nextMethod, ie.getArgs());
-                            dfsMethod(nextMethod);
+                            callMethods.add(nextMethod);
                         }
                     }
                 } else {
@@ -84,7 +85,7 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                         Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                         if (right instanceof NewExpr) {
                             graphBuilder.addEdge(allocId, left, 1, 0);
-                            graphBuilder.addEdge(left, allocId, 1, 0);
+                            graphBuilder.addEdge(left, allocId, -1, 0);
                         } else if ((right instanceof Local) || (right instanceof SootFieldRef)) {
                             if ((left instanceof Local) || (left instanceof SootFieldRef)) {
                                 graphBuilder.addEdge(right, left, 3, 0);
@@ -106,6 +107,9 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                         }
                     }
                 }
+            }
+            for (SootMethod callMethod : callMethods) {
+                dfsMethod(callMethod);
             }
         }
     }

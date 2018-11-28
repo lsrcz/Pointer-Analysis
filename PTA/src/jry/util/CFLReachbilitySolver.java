@@ -44,7 +44,6 @@ public class CFLReachbilitySolver {
                     List<CFLGraph.GraphEdge> inEdges = edge.u.getInByType(rule.typeR);
                     for (CFLGraph.GraphEdge inEdge : inEdges) {
                         CFLGraph.GraphEdge newEdge = graph.initEdge(inEdge.u, edge.v, rule.typeS, 0);
-                        graph.addEdge(newEdge);
                         if (graph.addEdge(newEdge)) Q.add(newEdge);
                     }
                 }
@@ -56,7 +55,6 @@ public class CFLReachbilitySolver {
                         List<CFLGraph.GraphEdge> outEdges = edge.v.getOutByValue(-inEdge.type, inEdge.value);
                         for (CFLGraph.GraphEdge outEdge : outEdges) {
                             CFLGraph.GraphEdge newEdge = graph.initEdge(inEdge.u, outEdge.v, rule.typeS, 0);
-                            graph.addEdge(newEdge);
                             if (graph.addEdge(newEdge)) Q.add(newEdge);
                         }
                     }

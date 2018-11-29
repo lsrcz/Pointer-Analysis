@@ -1,8 +1,10 @@
 package Anderson;
 
+import jry.util.ResultOperator;
 import soot.*;
 import soot.jimple.NewExpr;
 import soot.toolkits.scalar.FlowSet;
+import utils.DataFlowSolutionToResultOperator;
 import vasco.DataFlowSolution;
 import vasco.callgraph.CallGraphTransformer;
 
@@ -15,9 +17,11 @@ public class InterProcedureAndersonTrans extends SceneTransformer {
     @Override
     protected void internalTransform(String s, Map<String, String> map) {
         analysis = new InterProcedureAnderson();
+        DataFlowSolutionToResultOperator converter = new DataFlowSolutionToResultOperator();
         analysis.doAnalysis();
         DataFlowSolution<Unit, Map<Local, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
-        int i = 0;
+        ResultOperator ro = converter.convert(solution);
+        System.out.println(ro);
     }
 
     public static void main(String args[]) {
@@ -29,14 +33,22 @@ public class InterProcedureAndersonTrans extends SceneTransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.InterFlow";
+        String className = "dataset.Test2";
 
         soot.Main.main(new String[]{
                 "-w",
-                //"-p", "cg.spark", "enabled:true",
+                "-app", "-pp",
+                "-keep-line-number",
+                "-keep-bytecode-offset",
+                "-p", "cg", "implicit-entry:false",
+                "-p", "cg.spark", "enabled",
+                "-p", "cg.spark", "simulate-natives",
+                "-p", "cg", "safe-forname",
+                "-p", "cg", "safe-newinstance",
                 "-p", "wjtp.fcpa", "enabled:true",
                 "-p", "wjtp.ipa", "enabled:true",
                 "-soot-class-path", classpath,
+                "-main-class", className,
                 "-f", "J",
                 className
         });

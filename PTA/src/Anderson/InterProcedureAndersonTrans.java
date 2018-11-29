@@ -1,7 +1,9 @@
 package Anderson;
 
+import jry.evaluation.AbstractPTATransformer;
 import soot.*;
 import soot.jimple.NewExpr;
+import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import utils.DataFlowSolutionToResultOperator;
 import vasco.DataFlowSolution;
@@ -11,9 +13,14 @@ import java.io.File;
 import java.util.Map;
 import jry.util.*;
 
-public class InterProcedureAndersonTrans extends SceneTransformer {
+public class InterProcedureAndersonTrans extends AbstractPTATransformer {
     private InterProcedureFieldAnderson analysis;
     private DataFlowSolutionToResultOperator solutionToResultOp;
+    private Map<Integer, ArraySparseSet<Integer>> result;
+
+    public Map<Integer, ArraySparseSet<Integer>> getResult() {
+        return result;
+    }
 
     @Override
     protected void internalTransform(String s, Map<String, String> map) {
@@ -22,6 +29,7 @@ public class InterProcedureAndersonTrans extends SceneTransformer {
         analysis.doAnalysis();
         DataFlowSolution<Unit, Map<Object, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
         ResultOperator resultOp = solutionToResultOp.convert(solution);
+        result = resultOp.getResult();
         System.out.println(resultOp.toString());
     }
 

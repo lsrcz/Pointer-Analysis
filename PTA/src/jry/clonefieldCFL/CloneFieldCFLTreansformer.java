@@ -178,14 +178,17 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
     }
 
 
-    private Local getReturnObj(SootMethod sMethod) {
+    private List<Local> getReturnObj(SootMethod sMethod) {
+        List<Local> ret = new ArrayList<>();
         for (Unit unit : sMethod.getActiveBody().getUnits()) {
             if (unit instanceof ReturnStmt) {
-                return (Local)((ReturnStmt)unit).getOp();
+                ret.add((Local)((ReturnStmt)unit).getOp());
+                //return (Local)((ReturnStmt)unit).getOp();
             }
         }
-        assert false;
-        return null;
+        return ret;
+        //assert false;
+        //return null;
     }
 
     private void resolveCall(SootMethod sMethod, SootMethod oldMethod, InvokeExpr ie) {
@@ -245,12 +248,16 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                     MethodWithCallsite rightm = new MethodWithCallsite(right, sMethod, depth, callStack);
                     if (left instanceof SootFieldRef) {
                         if (((SootFieldRef)left).isStatic()) {
-                            leftm = new MethodWithCallsite(left, DUMMY_METHOD, depth, new LinkedList<>());
+                            SootFieldRef sfr = (SootFieldRef)left;
+                            leftm = new MethodWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
+                            //leftm = new MethodWithCallsite(left, DUMMY_METHOD, depth, new LinkedList<>());
                         }
                     }
                     if (right instanceof SootFieldRef) {
                         if (((SootFieldRef)right).isStatic()) {
-                            rightm = new MethodWithCallsite(right, DUMMY_METHOD, depth, new LinkedList<>());
+                            //rightm = new MethodWithCallsite(right, DUMMY_METHOD, depth, new LinkedList<>());
+                            SootFieldRef sfr = (SootFieldRef)right;
+                            rightm = new MethodWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
                         }
                     }
                     if (right instanceof NewExpr) {
@@ -299,21 +306,23 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                             // callMethods.add(nextMethod);
                             resolveCall(nextMethod, sMethod, ie);
                             dfsMethod(nextMethod);
-                            Object returnObj = getReturnObj(nextMethod);
-                            callStack.addFirst(new Pair<>(sMethod, line)); // dummy
-                            MethodWithCallsite returnm = new MethodWithCallsite(returnObj, nextMethod, depth, callStack);
-                            System.out.println("-----");
-                            System.out.println(returnm);
-                            System.out.println(leftm);
-                            nodeList.add(returnm);
-                            nodeList.add(leftm);
-                            callStack.removeFirst();
-                            if ((left instanceof Local) || (left instanceof SootFieldRef)) {
-                                graphBuilder.addEdge(returnm, leftm, 3, 0);
-                                graphBuilder.addEdge(leftm, returnm, -3, 0);
-                            } else if (left instanceof InstanceFieldRef) {
-                                graphBuilder.addEdge(leftm, returnm, 4, ((InstanceFieldRef) left).getFieldRef());
-                                graphBuilder.addEdge(returnm, leftm, -5, ((InstanceFieldRef) left).getFieldRef());
+                            for (Object returnObj : getReturnObj(nextMethod)) {
+                                // Object returnObj = getReturnObj(nextMethod);
+                                callStack.addFirst(new Pair<>(sMethod, line)); // dummy
+                                MethodWithCallsite returnm = new MethodWithCallsite(returnObj, nextMethod, depth, callStack);
+                                System.out.println("-----");
+                                System.out.println(returnm);
+                                System.out.println(leftm);
+                                nodeList.add(returnm);
+                                nodeList.add(leftm);
+                                callStack.removeFirst();
+                                if ((left instanceof Local) || (left instanceof SootFieldRef)) {
+                                    graphBuilder.addEdge(returnm, leftm, 3, 0);
+                                    graphBuilder.addEdge(leftm, returnm, -3, 0);
+                                } else if (left instanceof InstanceFieldRef) {
+                                    graphBuilder.addEdge(leftm, returnm, 4, ((InstanceFieldRef) left).getFieldRef());
+                                    graphBuilder.addEdge(returnm, leftm, -5, ((InstanceFieldRef) left).getFieldRef());
+                                }
                             }
                         }
                     } else if (right instanceof Constant) {
@@ -357,7 +366,7 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.TestSuper";
+        String className = "dataset.Test8";
 
         soot.Main.main(new String[]{
                 "-w",

@@ -76,6 +76,7 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
                 }
             }
         }
+
     }
 
     @Override
@@ -92,7 +93,6 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
         } else if (unit instanceof ReturnStmt) {
             lhsOp = ((ReturnStmt)unit).getOp();
             assign(RETURN_LOCAL, lhsOp, localFlowSetMap, outValue);
-            int i = 0;
         }
         return outValue;
     }
@@ -103,9 +103,9 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
             SootMethod sootMethod,
             Unit unit,
             Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
-        Map<Object, FlowSet<NewExpr>> entryValue = this.topValue();
+        Map<Object, FlowSet<NewExpr>> entryValue = this.copy(localFlowSetMap);
+        //Map<Object, FlowSet<NewExpr>> entryValue = this.topValue();
         InvokeExpr ie = ((Stmt)unit).getInvokeExpr();
-
         for (int i = 0; i < ie.getArgCount(); ++i) {
             Value arg = ie.getArg(i);
             Local param = sootMethod.getActiveBody().getParameterLocal(i);
@@ -125,11 +125,11 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
             SootMethod sootMethod,
             Unit unit,
             Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
-        Map<Object, FlowSet<NewExpr>> afterCallValue = this.topValue();
+        Map<Object, FlowSet<NewExpr>> afterCallValue = this.copy(localFlowSetMap);
+        //Map<Object, FlowSet<NewExpr>> afterCallValue = this.topValue();
         if (unit instanceof AssignStmt) {
             Value lhsOp = ((AssignStmt)unit).getLeftOp();
             assign((Local)lhsOp, RETURN_LOCAL, localFlowSetMap, afterCallValue);
-            int i = 0;
         }
         return afterCallValue;
     }

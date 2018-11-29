@@ -23,7 +23,7 @@ public class DataFlowSolutionToResultOperator {
         allocs = new HashMap<>();
         ReachableMethods reachableMethods = Scene.v().getReachableMethods();
         QueueReader<MethodOrMethodContext> qr = reachableMethods.listener();
-        int allocID = -1;
+        int allocID = 0;
         while (qr.hasNext()) {
             SootMethod sm = qr.next().method();
             if (sm.hasActiveBody()) {
@@ -41,7 +41,7 @@ public class DataFlowSolutionToResultOperator {
                     if (u instanceof DefinitionStmt) {
                         if (((DefinitionStmt)u).getRightOp() instanceof NewExpr) {
                             allocs.put((NewExpr)((DefinitionStmt)u).getRightOp(), allocID);
-                            allocID = -1;
+                            allocID = 0;
                         }
                     }
                 }
@@ -49,10 +49,10 @@ public class DataFlowSolutionToResultOperator {
         }
     }
 
-    public ResultOperator convert(DataFlowSolution<Unit, Map<Local, FlowSet<NewExpr>>> dfs) {
+    public ResultOperator convert(DataFlowSolution<Unit, Map<Object, FlowSet<NewExpr>>> dfs) {
         Map<Integer, ArraySparseSet<Integer>> set = new HashMap<>();
         for (InvokeStmt is: queries.keySet()) {
-            Map<Local, FlowSet<NewExpr>> r = dfs.getValueAfter(is);
+            Map<Object, FlowSet<NewExpr>> r = dfs.getValueAfter(is);
             Pair<Local, Integer> p = queries.get(is);
             FlowSet<NewExpr> s = r.get(p.getO1());
             ArraySparseSet<Integer> iset = new ArraySparseSet<>();

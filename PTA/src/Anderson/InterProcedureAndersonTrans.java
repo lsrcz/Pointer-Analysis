@@ -3,21 +3,26 @@ package Anderson;
 import soot.*;
 import soot.jimple.NewExpr;
 import soot.toolkits.scalar.FlowSet;
+import utils.DataFlowSolutionToResultOperator;
 import vasco.DataFlowSolution;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
 import java.util.Map;
+import jry.util.*;
 
 public class InterProcedureAndersonTrans extends SceneTransformer {
-    private InterProcedureAnderson analysis;
+    private InterProcedureFieldAnderson analysis;
+    private DataFlowSolutionToResultOperator solutionToResultOp;
 
     @Override
     protected void internalTransform(String s, Map<String, String> map) {
-        analysis = new InterProcedureAnderson();
+        solutionToResultOp = new DataFlowSolutionToResultOperator();
+        analysis = new InterProcedureFieldAnderson();
         analysis.doAnalysis();
-        DataFlowSolution<Unit, Map<Local, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
-        int i = 0;
+        DataFlowSolution<Unit, Map<Object, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
+        ResultOperator resultOp = solutionToResultOp.convert(solution);
+        System.out.println(resultOp.toString());
     }
 
     public static void main(String args[]) {
@@ -29,7 +34,7 @@ public class InterProcedureAndersonTrans extends SceneTransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.InterFlow";
+        String className = "test.FieldSensitivity";
 
         soot.Main.main(new String[]{
                 "-w",

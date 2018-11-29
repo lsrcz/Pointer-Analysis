@@ -15,11 +15,19 @@ public class ResultOperator {
         }
     }
 
-    public void Merge(Map<Integer, ArraySparseSet<Integer>> S) {
+    public void Intersect(Map<Integer, ArraySparseSet<Integer>> S) {
         for (Map.Entry<Integer, ArraySparseSet<Integer>> entry : S.entrySet()) {
             assert result.containsKey(entry.getKey());
             ArraySparseSet current = result.get(entry.getKey());
             current.intersection(entry.getValue(), current);
+        }
+    }
+
+    public void Union(Map<Integer, ArraySparseSet<Integer>> S) {
+        for (Map.Entry<Integer, ArraySparseSet<Integer>> entry : S.entrySet()) {
+            assert result.containsKey(entry.getKey());
+            ArraySparseSet current = result.get(entry.getKey());
+            current.union(entry.getValue(), current);
         }
     }
 

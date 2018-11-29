@@ -9,6 +9,27 @@ import soot.toolkits.scalar.ArraySparseSet;
 
 import java.util.*;
 
+class AllocRef {
+    Integer id;
+
+    @Override
+    public int hashCode() {
+        return ("AllocRef" + id).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof AllocRef)) {
+            return false;
+        }
+        return id.equals(((AllocRef) obj).id);
+    }
+
+    public AllocRef(int _id) {
+        id = _id;
+    }
+}
+
 public class BasicFieldCFLTreansformer extends SceneTransformer {
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
     Set<SootMethod> isVisited = new HashSet<SootMethod>();
@@ -31,7 +52,7 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                 if (unit instanceof DefinitionStmt) {
                     if (((DefinitionStmt) unit).getRightOp() instanceof ParameterRef) {
                         ParameterRef right = (ParameterRef)((DefinitionStmt) unit).getRightOp();
-                        System.out.println("[FindPar] " + right);
+                        // System.out.println("[FindPar] " + right);
                         Local left = (Local)((DefinitionStmt) unit).getLeftOp();
                         int where = right.getIndex();
                         if (args.get(where) instanceof Local) {
@@ -47,6 +68,7 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
 
     private void assignThis(SootMethod sMethod, Local base) {
         if (sMethod.hasActiveBody()) {
+            System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 if (unit instanceof DefinitionStmt) {
                     Value right = ((DefinitionStmt) unit).getRightOp();
@@ -98,16 +120,17 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
         Set<SootMethod> callMethods = new HashSet<SootMethod>();
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
+            AllocRef allocRef = new AllocRef(0);
             System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
-                    System.out.println("Invoke " + ie);
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
                         allocId = ((IntConstant) ie.getArgs().get(0)).value;
                         totalNew += 1;
-                        graphBuilder.assignAllocId(totalNew, allocId);
+                        allocRef = new AllocRef(totalNew);
+                        graphBuilder.assignAllocId(allocRef, allocId);
                     } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
                         Local var = (Local) ie.getArgs().get(1);
                         int id = ((IntConstant) ie.getArgs().get(0)).value;
@@ -120,13 +143,13 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                         }
                     }
                 } else if (unit instanceof DefinitionStmt) {
-                    System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
+                    // System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
                     Object right = getValue(((DefinitionStmt) unit).getRightOp());
-                    System.out.println(right.getClass() + " " + right);
+                    // System.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                     if (right instanceof NewExpr) {
-                        graphBuilder.addEdge(allocId, left, 1, 0);
-                        graphBuilder.addEdge(left, allocId, -1, 0);
+                        graphBuilder.addEdge(allocRef, left, 1, 0);
+                        graphBuilder.addEdge(left, allocRef, -1, 0);
                     } else if ((right instanceof Local) || (right instanceof SootFieldRef)) {
                         if ((left instanceof Local) || (left instanceof SootFieldRef)) {
                             graphBuilder.addEdge(right, left, 3, 0);
@@ -145,7 +168,6 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                     } else if (right instanceof ParameterRef) {
                     } else if (right instanceof InvokeExpr){
                         InvokeExpr ie = (InvokeExpr)right;
-                        System.out.println("Fa " + ie);
                         List<SootMethod> nextMethods = CallGraphGenerator.resolveTarget(unit);
                         for (SootMethod nextMethod : nextMethods) {
                             callMethods.add(nextMethod);

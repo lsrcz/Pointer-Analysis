@@ -7,6 +7,7 @@ import jry.util.CallGraphGenerator;
 import soot.*;
 import soot.jimple.*;
 import soot.toolkits.scalar.ArraySparseSet;
+import soot.util.Chain;
 
 import java.util.*;
 
@@ -31,7 +32,7 @@ class AllocRef {
     }
 }
 
-public class BasicFieldCFLTreansformer extends AbstractPTATransformer {
+public class BasicFieldCFLTransformer extends AbstractPTATransformer {
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
     Set<SootMethod> isVisited = new HashSet<SootMethod>();
     Map<Integer, Local> queries = new TreeMap<Integer, Local>();
@@ -46,7 +47,7 @@ public class BasicFieldCFLTreansformer extends AbstractPTATransformer {
         if (var instanceof ArrayRef) {
             return ((ArrayRef) var).getBase();
         } else if (var instanceof StaticFieldRef) {
-            return ((StaticFieldRef) var).getFieldRef();
+            return ((StaticFieldRef) var).getField();
         }
         return var;
     }
@@ -79,7 +80,7 @@ public class BasicFieldCFLTreansformer extends AbstractPTATransformer {
                     Value right = ((DefinitionStmt) unit).getRightOp();
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                     if (right instanceof ThisRef) {
-                        if ((left instanceof Local) || (left instanceof SootFieldRef)) {
+                        if ((left instanceof Local) || (left instanceof SootField)) {
                             graphBuilder.addEdge(base, left, 3, 0);
                             graphBuilder.addEdge(left, base, -3, 0);
                         } else if (left instanceof InstanceFieldRef) {
@@ -155,8 +156,8 @@ public class BasicFieldCFLTreansformer extends AbstractPTATransformer {
                     if (right instanceof NewExpr) {
                         graphBuilder.addEdge(allocRef, left, 1, 0);
                         graphBuilder.addEdge(left, allocRef, -1, 0);
-                    } else if ((right instanceof Local) || (right instanceof SootFieldRef)) {
-                        if ((left instanceof Local) || (left instanceof SootFieldRef)) {
+                    } else if ((right instanceof Local) || (right instanceof SootField)) {
+                        if ((left instanceof Local) || (left instanceof SootField)) {
                             graphBuilder.addEdge(right, left, 3, 0);
                             graphBuilder.addEdge(left, right, -3, 0);
                         } else if (left instanceof InstanceFieldRef) {
@@ -178,7 +179,7 @@ public class BasicFieldCFLTreansformer extends AbstractPTATransformer {
                             callMethods.add(nextMethod);
                             resolveCall(nextMethod, ie);
                             Object returnObj = getReturnObj(nextMethod);
-                            if ((left instanceof Local) || (left instanceof SootFieldRef)) {
+                            if ((left instanceof Local) || (left instanceof SootField)) {
                                 graphBuilder.addEdge(returnObj, left, 3, 0);
                                 graphBuilder.addEdge(left, returnObj, -3, 0);
                             } else if (left instanceof InstanceFieldRef) {
@@ -201,6 +202,12 @@ public class BasicFieldCFLTreansformer extends AbstractPTATransformer {
     protected void internalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
         dfsMethod(mainMethod);
+
+        /*Chain<SootClass> sootClasses = Scene.v().getClasses();
+        for (SootClass sootClass : sootClasses) {
+            System.out.println(sootClass.getFields());
+        }*/
+
         graphBuilder.doAnalysis(CFLLib.FieldCFL, CFLLib.FieldCFLName);
         for (Map.Entry<Integer, Local> entry : queries.entrySet()) {
             result.put(entry.getKey(), graphBuilder.getPointTo(entry.getValue(), -2));

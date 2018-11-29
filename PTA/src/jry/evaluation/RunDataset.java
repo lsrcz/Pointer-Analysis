@@ -1,7 +1,7 @@
 package jry.evaluation;
 
 import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
-import jry.basicfieldCFL.BasicFieldCFLTreansformer;
+import jry.basicfieldCFL.BasicFieldCFLTransformer;
 import jry.util.FileIO;
 import jry.util.ResultOperator;
 import soot.PackManager;
@@ -54,6 +54,7 @@ public class RunDataset {
                 "-main-class", className,
                 "-f", "none", className
         };
+        soot.G.reset();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
         AbstractPTATransformer transformer = null;
         try {
@@ -67,12 +68,12 @@ public class RunDataset {
         soot.Main.main(sootArgs);
         PackManager.v().getPack("wjtp").remove("wjtp.fcpa");
         PackManager.v().getPack("wjtp").remove("wjtp.mypta");
-        // System.out.println(transformer.getResult());
+        System.out.println(transformer.getResult());
         return transformer.getResult();
     }
 
     void getAllTransformer() {
-        allTransformer.add(BasicFieldCFLTreansformer.class);
+        allTransformer.add(BasicFieldCFLTransformer.class);
     }
 
     Integer[] checkValid(Map<Integer, ArraySparseSet<Integer>> groudTruth, ArrayList<Map<Integer, ArraySparseSet<Integer>>> allResult) {
@@ -124,6 +125,13 @@ public class RunDataset {
             }
             Integer[] getNumber = checkValid(groundTruth, results);
             printResult(i, getNumber);
+        }
+    }
+
+    public void testAllTransformerWithAllData() {
+        getAllTransformer();
+        for (int i = 1; i <= datasetSize; ++i) {
+            testAllTransformerWithSingleData(i);
         }
     }
 }

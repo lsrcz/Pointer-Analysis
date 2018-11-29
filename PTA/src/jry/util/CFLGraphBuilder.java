@@ -28,7 +28,7 @@ public class CFLGraphBuilder {
             return Id.get(obj);
         } else {
             totalId += 1;
-            //System.out.println("[NewNode] " + totalId + " " + obj + " " + obj.getClass());
+            // System.out.println("[NewNode] " + totalId + " " + obj + " " + obj.getClass());
             /*for (Map.Entry<Object, Integer> entry : Id.entrySet()) {
                 System.out.println(entry.getKey() + " " + entry.getKey().getClass() + " " + entry.getKey().equals(obj));
             }*/

@@ -1,12 +1,14 @@
+class LocalA {
+    static int x = 0;
+}
+
+class LocalB extends LocalA {
+}
+
 public class LocalTest {
     public static void main(String[] args) {
-        int a = 0;
-        int b = 0;
-        int c = 0;
-        get(a, b, c);
-    }
-
-    static void get(int x, int y, int z) {
-
+        LocalB k1 = new LocalB();
+        LocalB.x = 1;
+        LocalA.x = 2;
     }
 }

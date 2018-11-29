@@ -1,12 +1,13 @@
 package jry.evaluation;
 
 import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
-import jry.basicfieldCFL.BasicFieldCFLTreansformer;
+import jry.basicfieldCFL.BasicFieldCFLTransformer;
 import jry.util.FileIO;
 import jry.util.ResultOperator;
 import soot.PackManager;
 import soot.Transform;
 import soot.toolkits.scalar.ArraySparseSet;
+import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
@@ -15,7 +16,15 @@ import java.util.*;
 
 public class RunDataset {
     final int datasetSize = 45;
-    final ArrayList<Class<? extends AbstractPTATransformer>> allTransformer = new ArrayList<>();
+    ArrayList<Class<? extends AbstractPTATransformer>> allTransformer = new ArrayList<>();
+
+    public RunDataset(){
+        getAllTransformer();
+    }
+
+    public RunDataset(ArrayList<Class<? extends AbstractPTATransformer>> _allTransformer){
+        allTransformer = _allTransformer;
+    }
 
     Map<Integer, ArraySparseSet<Integer>> getGroundTruth(int testId) {
         List<String> lines = FileIO.readLines("resources/dataset/GroundTruth" + testId + ".txt");
@@ -54,6 +63,8 @@ public class RunDataset {
                 "-main-class", className,
                 "-f", "none", className
         };
+        soot.G.reset();
+        VascoClearer.clear();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
         AbstractPTATransformer transformer = null;
         try {
@@ -67,12 +78,12 @@ public class RunDataset {
         soot.Main.main(sootArgs);
         PackManager.v().getPack("wjtp").remove("wjtp.fcpa");
         PackManager.v().getPack("wjtp").remove("wjtp.mypta");
-        // System.out.println(transformer.getResult());
+        System.out.println(transformer.getResult());
         return transformer.getResult();
     }
 
     void getAllTransformer() {
-        allTransformer.add(BasicFieldCFLTreansformer.class);
+        allTransformer.add(BasicFieldCFLTransformer.class);
     }
 
     Integer[] checkValid(Map<Integer, ArraySparseSet<Integer>> groudTruth, ArrayList<Map<Integer, ArraySparseSet<Integer>>> allResult) {
@@ -113,7 +124,6 @@ public class RunDataset {
     }
 
     public void testAllTransformerWithSingleData(int testId) {
-        getAllTransformer();
         for (int i = testId; i <= testId; ++i) {
             Map<Integer, ArraySparseSet<Integer>> groundTruth = getGroundTruth(i);
             ArrayList<Map<Integer, ArraySparseSet<Integer>>> results = new ArrayList<>();
@@ -121,9 +131,17 @@ public class RunDataset {
             for (Class<? extends AbstractPTATransformer> type : allTransformer) {
                 results.add(getResult(type, i));
                 id += 1;
+                System.out.println("Type" + type);
             }
             Integer[] getNumber = checkValid(groundTruth, results);
             printResult(i, getNumber);
+        }
+    }
+
+    public void testAllTransformerWithAllData() {
+        for (int i = 1; i <= datasetSize; ++i) {
+            System.out.println("[Run]" + i) ;
+            testAllTransformerWithSingleData(i);
         }
     }
 }

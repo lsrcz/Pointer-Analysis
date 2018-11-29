@@ -1,10 +1,8 @@
 package Anderson;
 
 import jry.util.ResultOperator;
-import jry.evaluation.AbstractPTATransformer;
 import soot.*;
 import soot.jimple.NewExpr;
-import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import utils.DataFlowSolutionToResultOperator;
 import vasco.DataFlowSolution;
@@ -12,30 +10,22 @@ import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
 import java.util.Map;
-import jry.util.*;
 
-public class InterProcedureAndersonTrans extends AbstractPTATransformer {
-    private InterProcedureFieldAnderson analysis;
-    private DataFlowSolutionToResultOperator solutionToResultOp;
-    private Map<Integer, ArraySparseSet<Integer>> result;
-
-    public Map<Integer, ArraySparseSet<Integer>> getResult() {
-        return result;
-    }
+public class InterProcedureAndersonTransNFS extends SceneTransformer {
+    private InterProcedureAndersonNFS analysis;
 
     @Override
     protected void internalTransform(String s, Map<String, String> map) {
-        solutionToResultOp = new DataFlowSolutionToResultOperator();
-        analysis = new InterProcedureFieldAnderson();
+        analysis = new InterProcedureAndersonNFS();
+        DataFlowSolutionToResultOperator converter = new DataFlowSolutionToResultOperator();
         analysis.doAnalysis();
-        DataFlowSolution<Unit, Map<Object, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
-        ResultOperator resultOp = solutionToResultOp.convert(solution);
-        result = resultOp.getResult();
-        System.out.println(resultOp.toString());
+        DataFlowSolution<Unit, Map<Local, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
+        ResultOperator ro = converter.convertLocal(solution);
+        System.out.println(ro);
     }
 
     public static void main(String args[]) {
-        InterProcedureAndersonTrans ipat = new InterProcedureAndersonTrans();
+        InterProcedureAndersonTransNFS ipat = new InterProcedureAndersonTransNFS();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
         String dir = "./resources";
@@ -43,9 +33,9 @@ public class InterProcedureAndersonTrans extends AbstractPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.FieldSensitivity";
+        String className = "dataset.Test2";
 
-        soot.Main.main(new String[]{
+        Main.main(new String[]{
                 "-w",
                 "-app", "-pp",
                 "-keep-line-number",

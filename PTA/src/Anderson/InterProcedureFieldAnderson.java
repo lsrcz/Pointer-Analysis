@@ -40,11 +40,14 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
         if (lhs instanceof Local) {
             output.put(lhs, new ArraySparseSet<>());
             if (rhs instanceof NewExpr) {
+                output.get(lhs).clear();
                 output.get(lhs).add((NewExpr) rhs);
             } else if (rhs instanceof Local) {
                 Local r = getLocal(rhs);
+                output.get(lhs).clear();
                 output.get(lhs).union(input.get(r));
             } else if (rhs instanceof InstanceFieldRef) {
+                output.get(lhs).clear();
                 Value base = ((InstanceFieldRef)rhs).getBase();
                 SootField field = ((InstanceFieldRef)rhs).getField();
                 if (base instanceof Local) {
@@ -57,6 +60,12 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
                         output.get(lhs).union(input.get(p));
                     }
                 }
+            } else if (rhs instanceof StaticFieldRef) {
+                output.get(lhs).clear();
+                SootField field = ((StaticFieldRef)rhs).getField();
+                if (input.containsKey(field)) {
+                    output.get(lhs).union(input.get(field));
+                }
             }
         } else if (lhs instanceof InstanceFieldRef) {
             if (rhs instanceof Local) {
@@ -65,15 +74,29 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
                     SootField field = ((InstanceFieldRef) lhs).getField();
                     if (base instanceof Local) {
                         Local x = getLocal(base);
+                        int s = input.get(base).size();
                         for (NewExpr expr : input.get(base)) {
                             Pair<NewExpr, SootField> p = new Pair<>(expr, field);
                             if (!input.containsKey(p)) {
                                 output.put(p, new ArraySparseSet<>());
                             }
+                            if (s == 1) {
+                                output.get(p).clear();
+                            }
                             output.get(p).union(input.get(rhs));
                         }
                     }
                 }
+            }
+        } else if (lhs instanceof StaticFieldRef) {
+            if (rhs instanceof Local) {
+                SootField field = ((StaticFieldRef)lhs).getField();
+                if (!output.containsKey(field)) {
+                    output.put(field, new ArraySparseSet<>());
+                } else {
+                    output.get(field).clear();
+                }
+                output.get(field).union(input.get(rhs));
             }
         }
     }
@@ -92,7 +115,6 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
         } else if (unit instanceof ReturnStmt) {
             lhsOp = ((ReturnStmt)unit).getOp();
             assign(RETURN_LOCAL, lhsOp, localFlowSetMap, outValue);
-            int i = 0;
         }
         return outValue;
     }
@@ -103,9 +125,10 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
             SootMethod sootMethod,
             Unit unit,
             Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
-        Map<Object, FlowSet<NewExpr>> entryValue = this.topValue();
+        Map<Object, FlowSet<NewExpr>> entryValue = this.copy(localFlowSetMap);
+        //Map<Object, FlowSet<NewExpr>> entryValue = this.topValue();
         InvokeExpr ie = ((Stmt)unit).getInvokeExpr();
-
+        int s = ie.getArgCount();
         for (int i = 0; i < ie.getArgCount(); ++i) {
             Value arg = ie.getArg(i);
             Local param = sootMethod.getActiveBody().getParameterLocal(i);
@@ -125,11 +148,11 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
             SootMethod sootMethod,
             Unit unit,
             Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
-        Map<Object, FlowSet<NewExpr>> afterCallValue = this.topValue();
+        Map<Object, FlowSet<NewExpr>> afterCallValue = this.copy(localFlowSetMap);
+        //Map<Object, FlowSet<NewExpr>> afterCallValue = this.topValue();
         if (unit instanceof AssignStmt) {
             Value lhsOp = ((AssignStmt)unit).getLeftOp();
             assign((Local)lhsOp, RETURN_LOCAL, localFlowSetMap, afterCallValue);
-            int i = 0;
         }
         return afterCallValue;
     }

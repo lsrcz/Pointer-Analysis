@@ -1,6 +1,6 @@
 package jry;
 
-import jry.basicfieldCFL.BasicFieldCFLTreansformer;
+import jry.basicfieldCFL.BasicFieldCFLTransformer;
 import jry.evaluation.RunDataset;
 import jry.util.ResultOperator;
 import soot.PackManager;
@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
         /*String dir = "resources";
-        String className = "dataset.Test2";
+        String className = "dataset.Test6";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
@@ -25,19 +25,17 @@ public class Main {
                 "-p", "cg", "implicit-entry:false",
                 "-p", "cg.spark", "enabled",
                 "-p", "cg.spark", "simulate-natives",
-                "-p", "cg", "safe-forname",
-                "-p", "cg", "safe-newinstance",
                 "-main-class", className,
                 "-f", "none", className
         };
         System.out.println(classPath);
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
-        BasicFieldCFLTreansformer fCFL = new BasicFieldCFLTreansformer();
+        BasicFieldCFLTransformer fCFL = new BasicFieldCFLTransformer();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", fCFL));
         soot.Main.main(sootArgs);
         ResultOperator result = new ResultOperator(fCFL.result);
         System.out.println(result);*/
         RunDataset datasetRunner = new RunDataset();
-        datasetRunner.testAllTransformerWithSingleData(3);
+        datasetRunner.testAllTransformerWithAllData();
     }
 }

@@ -1,0 +1,68 @@
+[NewNode] 1 jry.basicfieldCFL.AllocRef@8c83eeb3 class jry.basicfieldCFL.AllocRef
+[NewNode] 2 temp$0 class soot.jimple.internal.JimpleLocal
+[NewNode] 3 this class soot.jimple.internal.JimpleLocal
+[NewNode] 4 <dataset.Test3Lib: dataset.Test3Class1 local1> class soot.AbstractSootFieldRef
+[NewNode] 5 jry.basicfieldCFL.AllocRef@8c83eeb4 class jry.basicfieldCFL.AllocRef
+[NewNode] 6 temp$1 class soot.jimple.internal.JimpleLocal
+[NewNode] 7 <dataset.Test3Lib: dataset.Test3Class1 local2> class soot.AbstractSootFieldRef
+[NewNode] 8 jry.basicfieldCFL.AllocRef@8c83eeb5 class jry.basicfieldCFL.AllocRef
+[NewNode] 9 temp$2 class soot.jimple.internal.JimpleLocal
+[NewNode] 10 <dataset.Test3Lib: dataset.Test3Class1 local3> class soot.AbstractSootFieldRef
+[NewNode] 11 jry.basicfieldCFL.AllocRef@8c83eeb6 class jry.basicfieldCFL.AllocRef
+[NewNode] 12 temp$3 class soot.jimple.internal.JimpleLocal
+[NewNode] 13 this class soot.jimple.internal.JimpleLocal
+[NewNode] 14 <dataset.Test3Lib: dataset.Test3Class2 local4> class soot.AbstractSootFieldRef
+[NewNode] 15 temp$4 class soot.jimple.internal.JimpleLocal
+[NewNode] 16 temp$5 class soot.jimple.internal.JimpleLocal
+[NewNode] 17 <dataset.Test3Class1: dataset.Test3Class1 field1> class soot.AbstractSootFieldRef
+[NewNode] 18 temp$6 class soot.jimple.internal.JimpleLocal
+[NewNode] 19 temp$7 class soot.jimple.internal.JimpleLocal
+[NewNode] 20 temp$8 class soot.jimple.internal.JimpleLocal
+[NewNode] 21 temp$9 class soot.jimple.internal.JimpleLocal
+[NewNode] 22 temp$10 class soot.jimple.internal.JimpleLocal
+[NewNode] 23 temp$11 class soot.jimple.internal.JimpleLocal
+[NewNode] 24 temp$12 class soot.jimple.internal.JimpleLocal
+[NewNode] 25 temp$13 class soot.jimple.internal.JimpleLocal
+[NewNode] 26 <dataset.Test3Class2: dataset.Test3Class2 field3> class soot.AbstractSootFieldRef
+[NewNode] 27 temp$14 class soot.jimple.internal.JimpleLocal
+[NewNode] 28 temp$15 class soot.jimple.internal.JimpleLocal
+[NewNode] 29 <dataset.Test3Class2: dataset.Test3Class2 field4> class soot.AbstractSootFieldRef
+[NewNode] 30 temp$16 class soot.jimple.internal.JimpleLocal
+[NewNode] 31 temp$17 class soot.jimple.internal.JimpleLocal
+[NewNode] 32 <dataset.Test3Class2: dataset.Test3Class1 field5> class soot.AbstractSootFieldRef
+[NewNode] 33 temp$18 class soot.jimple.internal.JimpleLocal
+[NewNode] 34 temp$19 class soot.jimple.internal.JimpleLocal
+[NewNode] 35 temp$20 class soot.jimple.internal.JimpleLocal
+[NewNode] 36 temp$21 class soot.jimple.internal.JimpleLocal
+[NewNode] 37 <dataset.Test3Class2: dataset.Test3Class1 field1> class soot.AbstractSootFieldRef
+[NewNode] 38 temp$22 class soot.jimple.internal.JimpleLocal
+[NewNode] 39 temp$23 class soot.jimple.internal.JimpleLocal
+[NewNode] 40 temp$24 class soot.jimple.internal.JimpleLocal
+[NewNode] 41 temp$25 class soot.jimple.internal.JimpleLocal
+[NewNode] 42 temp$26 class soot.jimple.internal.JimpleLocal
+[NewNode] 43 temp$27 class soot.jimple.internal.JimpleLocal
+[NewNode] 44 arg0 class soot.jimple.internal.JimpleLocal
+[NewNode] 45 arg1 class soot.jimple.internal.JimpleLocal
+[NewNode] 46 temp$28 class soot.jimple.internal.JimpleLocal
+[NewNode] 47 temp$29 class soot.jimple.internal.JimpleLocal
+[NewNode] 48 temp$30 class soot.jimple.internal.JimpleLocal
+[NewNode] 49 temp$31 class soot.jimple.internal.JimpleLocal
+[NewNode] 50 temp$32 class soot.jimple.internal.JimpleLocal
+[NewNode] 51 temp$33 class soot.jimple.internal.JimpleLocal
+[NewNode] 52 temp$34 class soot.jimple.internal.JimpleLocal
+[NewNode] 53 temp$35 class soot.jimple.internal.JimpleLocal
+[NewNode] 54 temp$36 class soot.jimple.internal.JimpleLocal
+[NewNode] 55 temp$37 class soot.jimple.internal.JimpleLocal
+[NewNode] 56 temp$38 class soot.jimple.internal.JimpleLocal
+[NewNode] 57 temp$39 class soot.jimple.internal.JimpleLocal
+[NewNode] 58 temp$40 class soot.jimple.internal.JimpleLocal
+[NewNode] 59 temp$41 class soot.jimple.internal.JimpleLocal
+[NewNode] 60 temp$42 class soot.jimple.internal.JimpleLocal
+[NewNode] 61 temp$43 class soot.jimple.internal.JimpleLocal
+[NewNode] 62 temp$44 class soot.jimple.internal.JimpleLocal
+[NewNode] 63 temp$45 class soot.jimple.internal.JimpleLocal
+[NewNode] 64 temp$46 class soot.jimple.internal.JimpleLocal
+[NewNode] 65 temp$47 class soot.jimple.internal.JimpleLocal
+[NewNode] 66 temp$48 class soot.jimple.internal.JimpleLocal
+[NewNode] 67 temp$49 class soot.jimple.internal.JimpleLocal
+[NewNode] 68 r0 class soot.jimple.internal.JimpleLocal

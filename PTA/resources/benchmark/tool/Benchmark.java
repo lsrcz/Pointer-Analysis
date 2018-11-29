@@ -23,6 +23,7 @@ public class Benchmark {
     }
 
     public static void print() {
+        System.out.println(result);
         try {
             FileOutputStream fileOutputStream = new FileOutputStream("log.txt");
             for (Map.Entry<Integer, Integer> entry : result.entrySet()) {

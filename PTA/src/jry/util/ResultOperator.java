@@ -31,6 +31,10 @@ public class ResultOperator {
         }
     }
 
+    public Map<Integer, ArraySparseSet<Integer>> getResult() {
+        return result;
+    }
+
     @Override
     public String toString() {
         String s = "";

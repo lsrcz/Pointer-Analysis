@@ -60,6 +60,12 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
                         output.get(lhs).union(input.get(p));
                     }
                 }
+            } else if (rhs instanceof StaticFieldRef) {
+                output.get(lhs).clear();
+                SootField field = ((StaticFieldRef)rhs).getField();
+                if (input.containsKey(field)) {
+                    output.get(lhs).union(input.get(field));
+                }
             }
         } else if (lhs instanceof InstanceFieldRef) {
             if (rhs instanceof Local) {
@@ -82,8 +88,17 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
                     }
                 }
             }
+        } else if (lhs instanceof StaticFieldRef) {
+            if (rhs instanceof Local) {
+                SootField field = ((StaticFieldRef)lhs).getField();
+                if (!output.containsKey(field)) {
+                    output.put(field, new ArraySparseSet<>());
+                } else {
+                    output.get(field).clear();
+                }
+                output.get(field).union(input.get(rhs));
+            }
         }
-
     }
 
     @Override

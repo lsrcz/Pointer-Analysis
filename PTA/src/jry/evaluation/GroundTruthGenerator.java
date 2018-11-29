@@ -15,9 +15,10 @@ public class GroundTruthGenerator {
         ResultOperator result = null;
         for (int i = 0; i <= 10; ++i) {
             String fileName = generator.changeToRunnable(testId, i);
-            Object execInfo = ExecCMP.exec("javac -cp resources resources/runnabledataset/Test1.java;" +
-                    "java -cp resources runnabledataset.Test1");
+            Object execInfo = ExecCMP.exec("javac -cp resources resources/runnabledataset/Test" + testId + ".java;" +
+                    "java -cp resources runnabledataset.Test" + testId);
             List<String> currentAns = FileIO.readLines("log.txt");
+            FileIO.remove("log.txt");
             System.out.println(currentAns);
             Map<Integer, ArraySparseSet<Integer>> map = new TreeMap<Integer, ArraySparseSet<Integer>>();
             for (String line : currentAns) {

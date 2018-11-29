@@ -1,6 +1,6 @@
-package dataset;
+package runnabledataset;
 
-import benchmark.internal.Benchmark;
+import benchmark.tool.Benchmark;
 import benchmark.tool.BasicClass;
 class Class1 extends BasicClass {
     public static Class3 field1;
@@ -605,7 +605,7 @@ class Class5 extends Class1 {
 }
 public class Test2{
     public static void main(String[] args) {
-        int inputValue = 0;
+        int inputValue = 10;
         Benchmark.alloc(1);
         Class1 local63 = new Class1();
         Benchmark.alloc(2);

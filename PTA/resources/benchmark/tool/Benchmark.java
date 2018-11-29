@@ -26,7 +26,7 @@ public class Benchmark {
         try {
             FileOutputStream fileOutputStream = new FileOutputStream("log.txt");
             for (Map.Entry<Integer, Integer> entry : result.entrySet()) {
-                fileOutputStream.write((entry.getKey() + " " + entry.getValue()).getBytes());
+                fileOutputStream.write((entry.getKey() + " " + entry.getValue() + "\n").getBytes());
             }
             fileOutputStream.close();
         } catch (FileNotFoundException e) {

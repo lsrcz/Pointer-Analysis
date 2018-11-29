@@ -1,6 +1,7 @@
 package jry.evaluation;
 
 import jas.Var;
+import jry.util.FileIO;
 import ppg.code.Code;
 
 import java.util.*;
@@ -50,23 +51,33 @@ class MethodRef {
 }
 
 public class CodeGenerator {
-    private final String Head = "package dataset;\n" +
+    private final String head = "package dataset;\n" +
             "\n" +
             "import benchmark.internal.Benchmark;\n" +
             "import benchmark.tool.BasicClass;\n";
 
     MyClass[] classes;
     List<MethodRef> allMethods = new LinkedList<>();
+    List<VarRef> varLib = new LinkedList<>();
     Random rand = new Random();
     int totalMethods = 0;
     int totalFields = 0;
     int totalClasses = 0;
     int maxMethodBody = 0;
     int localId = 0;
+    String mainClass = "";
 
-    public CodeGenerator(int classNum, int maxFields, int maxMethods, int _maxMethodBody) {
+    public CodeGenerator(int classNum, int maxFields, int maxMethods, int _maxMethodBody, String _mainClass, Integer libNum) {
+        mainClass = _mainClass;
         maxMethodBody = _maxMethodBody;
         getClasses(classNum, maxFields, maxMethods);
+        for (int i = 1; i <= classNum; ++i) {
+            int count = rand.nextInt(libNum) + 1;
+            for (int j = 1; j <= count; ++j) {
+                localId += 1;
+                varLib.add(new VarRef(i, getLocalName(localId)));
+            }
+        }
     }
 
     String printClass(MyClass currentClass) {
@@ -89,16 +100,27 @@ public class CodeGenerator {
         return head + fields + methods + "}\n";
     }
 
-    public String generateCode(String mainClass) {
-        String ans = Head;
+    String printLib() {
+        String head = "class " + mainClass + "Lib{\n";
+        String fields = "";
+        for (VarRef var : varLib) {
+            fields += "public static " + getClassName(var.type) + " " + var.name + ";\n";
+        }
+        return head + fields + "}\n";
+    }
+
+    public String generateCode() {
+        String ans = head;
+        ans += printLib();
         for (int i = 1; i <= totalClasses; ++i) {
             ans += printClass(classes[i]);
         }
-        ans += printMain(mainClass);
+        ans += printMain();
+        FileIO.write("resources/dataset/" + mainClass + ".java", ans);
         return ans;
     }
 
-    String printMain(String mainClass) {
+    String printMain() {
         int allocId = 0;
         int queryId = 0;
         String head = "public class " + mainClass + "{\n";
@@ -106,15 +128,11 @@ public class CodeGenerator {
         head += "int inputValue = 0;\n";
         String definitionPhase = "";
         List<VarRef> vars = new LinkedList<VarRef>();
-        for (int i = 1; i <= totalClasses; ++i) {
-            int num = rand.nextInt(2) + 1;
-            for (int j = 1; j <= num; ++j) {
-                allocId += 1;
-                definitionPhase += "Benchmark.alloc(" + allocId + ");\n";
-                localId += 1;
-                definitionPhase += getClassName(i) + " " + getLocalName(localId) + " = new " + getClassName(i) + "();\n";
-                vars.add(new VarRef(i, getLocalName(localId)));
-            }
+        for (VarRef var : varLib) {
+            allocId += 1;
+            definitionPhase += "Benchmark.alloc(" + allocId + ");\n";
+            definitionPhase += mainClass + "Lib." + var.name + " = new " + getClassName(var.type) + "();\n";
+            vars.add(new VarRef(var.type, mainClass + "Lib." + var.name));
         }
         String assignPhase = "";
         for (VarRef currentVar : vars) {
@@ -134,7 +152,9 @@ public class CodeGenerator {
             queryId += 1;
             queryPhase += "Benchmark.test(" + queryId + "," + name + ");\n";
         }
-        return head + definitionPhase + assignPhase + body + queryPhase + "Benchmark.print();\n}\n}\n";
+
+        String code = head + definitionPhase + assignPhase + body + queryPhase + "Benchmark.print();\n}\n}\n";
+        return code;
     }
 
     private void getClasses(int classNum, int maxFields, int maxMethods) {
@@ -147,8 +167,8 @@ public class CodeGenerator {
             } else {
                 newClass.father = 0;
             }
-            int fieldNum = rand.nextInt(maxFields);
-            int methodNum = rand.nextInt(maxMethods);
+            int fieldNum = rand.nextInt(maxFields) + 1;
+            int methodNum = rand.nextInt(maxMethods) + 1;
             for (int j = 1; j <= fieldNum; ++j) {
                 totalFields += 1;
                 MyField currentField = new MyField(totalFields, rand.nextInt(classNum) + 1, rand.nextInt(2) == 0);
@@ -186,7 +206,7 @@ public class CodeGenerator {
             return "void";
         } else if (type == 0) {
             return "BasicClass";
-        } else return "Class" + type;
+        } else return mainClass + "Class" + type;
     }
 
     String getFieldName(int id) {
@@ -263,6 +283,10 @@ public class CodeGenerator {
         }
         int position = rand.nextInt(length);
         return allNames.get(position);
+    }
+
+    String chooseLib(int type) {
+        return mainClass + "Lib." + choose(type, varLib, 0);
     }
 
     enum LineType {
@@ -382,7 +406,7 @@ public class CodeGenerator {
         if (currentMethod.returnType == -1) {
             signature += "return;\n";
         } else {
-            signature += "return new " + getClassName(currentMethod.returnType) + "();\n";
+            signature += "return " + chooseLib(currentMethod.returnType) + ";\n";
         }
 
         List<VarRef> vars = new LinkedList<VarRef>();
@@ -406,7 +430,7 @@ public class CodeGenerator {
         if (currentMethod.returnType != -1) {
             String returnVar = choose(currentMethod.returnType, vars, 1);
             if (returnVar == null) {
-                body += "return new " + getClassName(currentMethod.returnType) + "();\n";
+                body += "return " + chooseLib(currentMethod.returnType) + ";\n";
             } else {
                 body += "return " + returnVar + ";\n";
             }

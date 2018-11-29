@@ -16,7 +16,6 @@ public class FileIO {
     }
 
     public static List<String> readLines(String file) {
-        File inputFile = new File(file);
         List<String> result = new LinkedList<String>();
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
@@ -29,6 +28,11 @@ public class FileIO {
             e.printStackTrace();
         }
         return result;
+    }
+
+    public static void remove(String path) {
+        File file = new File(path);
+        file.delete();
     }
 
     public static String read(String file) {

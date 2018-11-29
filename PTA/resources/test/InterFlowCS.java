@@ -2,10 +2,10 @@ package test;
 
 import benchmark.internal.Benchmark;
 
-class A {
+class A1 {
 }
 
-class B {
+class B1 {
     B func(B x, B y) {
         return x;
     }

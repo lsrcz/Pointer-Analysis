@@ -160,7 +160,7 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
                             }
                         }
                     } else if (right instanceof Constant) {
-                    } else if (right instanceof ThisRef) {
+                    } else if (right instanceof ThisRef || right instanceof BinopExpr || right instanceof UnopExpr) {
                     } else assert false;
                 } else assert CallGraphGenerator.resolveTarget(unit).isEmpty();
             }

@@ -38,6 +38,6 @@ public class Main {
         ResultOperator result = new ResultOperator(fCFL.result);
         System.out.println(result);*/
         RunDataset datasetRunner = new RunDataset();
-        datasetRunner.testAllTransformerWithSingleData(2);
+        datasetRunner.testAllTransformerWithSingleData(4);
     }
 }

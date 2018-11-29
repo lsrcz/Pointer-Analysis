@@ -40,6 +40,15 @@ class VarRef {
     }
 }
 
+class MethodRef {
+    public Integer classId = 0;
+    MyMethod method;
+    public MethodRef(Integer _classId, MyMethod _method) {
+        classId = _classId;
+        method = _method;
+    }
+}
+
 public class CodeGenerator {
     private final String Head = "package dataset;\n" +
             "\n" +
@@ -47,11 +56,13 @@ public class CodeGenerator {
             "import benchmark.tool.BasicClass;\n";
 
     MyClass[] classes;
+    List<MethodRef> allMethods = new LinkedList<>();
     Random rand = new Random();
     int totalMethods = 0;
     int totalFields = 0;
     int totalClasses = 0;
     int maxMethodBody = 0;
+    int localId = 0;
 
     public CodeGenerator(int classNum, int maxFields, int maxMethods, int _maxMethodBody) {
         maxMethodBody = _maxMethodBody;
@@ -78,13 +89,52 @@ public class CodeGenerator {
         return head + fields + methods + "}\n";
     }
 
-    @Override
-    public String toString() {
+    public String generateCode(String mainClass) {
         String ans = Head;
         for (int i = 1; i <= totalClasses; ++i) {
             ans += printClass(classes[i]);
         }
+        ans += printMain(mainClass);
         return ans;
+    }
+
+    String printMain(String mainClass) {
+        int allocId = 0;
+        int queryId = 0;
+        String head = "public class " + mainClass + "{\n";
+        head += "public static void main(String[] args) {\n";
+        head += "int inputValue = 0;\n";
+        String definitionPhase = "";
+        List<VarRef> vars = new LinkedList<VarRef>();
+        for (int i = 1; i <= totalClasses; ++i) {
+            int num = rand.nextInt(2) + 1;
+            for (int j = 1; j <= num; ++j) {
+                allocId += 1;
+                definitionPhase += "Benchmark.alloc(" + allocId + ");\n";
+                localId += 1;
+                definitionPhase += getClassName(i) + " " + getLocalName(localId) + " = new " + getClassName(i) + "();\n";
+                vars.add(new VarRef(i, getLocalName(localId)));
+            }
+        }
+        String assignPhase = "";
+        for (VarRef currentVar : vars) {
+            for (MyField field : classes[currentVar.type].fields) {
+                List<String> rightVars = new LinkedList<>();
+                getAllVars("", field.type, 0, vars, rightVars, InhLevel.SON);
+                assert !rightVars.isEmpty();
+                String rVar = rightVars.get(rand.nextInt(rightVars.size()));
+                assignPhase += currentVar.name + "." + getFieldName(field.id) + " = " + rVar + ";\n";
+            }
+        }
+        String body = generateBody(10, vars, "inputValue", "3", 0);
+        String queryPhase = "";
+        List<String> queryName = new LinkedList<>();
+        getAllVars("", 0, 1, vars, queryName, InhLevel.SON);
+        for (String name : queryName) {
+            queryId += 1;
+            queryPhase += "Benchmark.test(" + queryId + "," + name + ");\n";
+        }
+        return head + definitionPhase + assignPhase + body + queryPhase + "Benchmark.print();\n}\n}\n";
     }
 
     private void getClasses(int classNum, int maxFields, int maxMethods) {
@@ -122,7 +172,9 @@ public class CodeGenerator {
                 if (rand.nextInt(2) == 0) {
                     returnType = rand.nextInt(classNum) + 1;
                 }
-                newClass.methods.add(new MyMethod(totalMethods, args, rand.nextInt(2) == 0, returnType));
+                MyMethod newMethod = new MyMethod(totalMethods, args, rand.nextInt(2) == 0, returnType);
+                newClass.methods.add(newMethod);
+                allMethods.add(new MethodRef(i, newMethod));
             }
             newClass.id = i;
             classes[i] = newClass;
@@ -145,17 +197,18 @@ public class CodeGenerator {
         return "method" + id;
     }
 
+    String getLocalName(int id) {
+        return "local" + id;
+    }
+
     boolean checkSuperClass(int father, int son) {
-        System.out.println(son + " " + father + " ");
+        if (father == 0) return true;
         while (son > 0) {
-            System.out.println("try " + son + " " + father);
             if (son == father) {
-                System.out.println(true);
                 return true;
             }
             son = classes[son].father;
         }
-        System.out.println(false);
         return false;
     }
 
@@ -168,10 +221,25 @@ public class CodeGenerator {
         return superClass;
     }
 
-    void getAllVars(String prefix, int classId, int remainLevel, List<VarRef> candidate, List<String> resultList) {
+    enum InhLevel {
+        SON, SUPER, EQUAL;
+    }
+
+    void getAllVars(String prefix, int classId, int remainLevel, List<VarRef> candidate,
+                    List<String> resultList, InhLevel type) {
         for (VarRef var : candidate) {
-            if (checkSuperClass(classId, var.type)) {
-                resultList.add(prefix + var.name);
+            if (type == InhLevel.SON) {
+                if (checkSuperClass(classId, var.type)) {
+                    resultList.add(prefix + var.name);
+                }
+            } else if (type == InhLevel.EQUAL) {
+                if (classId == var.type) {
+                    resultList.add(prefix + var.name);
+                }
+            } else if (type == InhLevel.SUPER) {
+                if (checkSuperClass(var.type, classId)) {
+                    resultList.add(prefix + var.name);
+                }
             }
         }
         if (remainLevel == 0) {
@@ -182,13 +250,13 @@ public class CodeGenerator {
             for (MyField field : classes[var.type].fields) {
                 nextLevel.add(new VarRef(field.type, getFieldName(field.id)));
             }
-            getAllVars(prefix + var.name + ".", classId, remainLevel -1, nextLevel, resultList);
+            getAllVars(prefix + var.name + ".", classId, remainLevel-1, nextLevel, resultList, type);
         }
     }
 
     String choose(int type, List<VarRef> vars, int extendLevel) {
         List<String> allNames = new LinkedList<>();
-        getAllVars("", type, extendLevel, vars, allNames);
+        getAllVars("", type, extendLevel, vars, allNames, InhLevel.SON);
         int length = allNames.size();
         if (length == 0) {
             return null;
@@ -209,20 +277,94 @@ public class CodeGenerator {
         return name + operator + number;
     }
 
-    String generateBody(int lines, List<VarRef> vars, String condition, String callDepth) {
-        String body = "";
-        for (int i = 1; i <= lines; ++i) {
-            LineType currentLineType = LineType.values()[rand.nextInt(LineType.values().length)];
-            switch (currentLineType){
-                case IF:
-                    String line = "if (" + getCondition(condition) + ") then ";
-                    line += generateBody(1, vars, condition, callDepth);
-                    if (rand.nextInt(2) == 0) {
-                        line += "else " + generateBody(1, vars, condition, callDepth);
-                    }
+    List<String> removeThis(List<String> list) {
+        List<String> result = new LinkedList<>();
+        for (String name : list) {
+            if (!name.equals("this")) {
+                result.add(name);
             }
         }
-        return "";
+        return result;
+    }
+
+    String generateBody(int lines, List<VarRef> vars, String condition, String callDepth, int generateDepth) {
+        if (generateDepth == 5) return "";
+        String body = "", line = "";
+        for (int i = 1; i <= lines; ++i) {
+            boolean generated = false;
+            while (!generated) {
+                LineType currentLineType = LineType.values()[rand.nextInt(LineType.values().length)];
+                switch (currentLineType) {
+                    case IF:
+                        line = "if (" + getCondition(condition) + ") {\n";
+                        line += generateBody(1, vars, condition, callDepth, generateDepth + 1) + "}";
+                        if (rand.nextInt(2) == 0) {
+                            line += "else {\n" + generateBody(1, vars, condition, callDepth, generateDepth + 1);
+                            line += "}";
+                        }
+                        line += "\n";
+                        generated = true;
+                        break;
+                    case FOR:
+                        localId += 1;
+                        String loopVar = getLocalName(localId);
+                        line = "for (int " + loopVar + " = 0; " + loopVar + "<=" + rand.nextInt(4) + "; " + loopVar + " += 1) {\n";
+                        line += generateBody(1, vars, condition, callDepth, generateDepth + 1);
+                        line += "}\n";
+                        generated = true;
+                        break;
+                    case ASSIGN:
+                        int classId = rand.nextInt(totalClasses) + 1;
+                        List<String> leftName = new LinkedList<>();
+                        getAllVars("", classId, 1, vars, leftName, InhLevel.EQUAL);
+                        leftName = removeThis(leftName);
+                        if (leftName.isEmpty()) break;
+                        List<String> rightName = new LinkedList<>();
+                        getAllVars("", classId, 1, vars, rightName, InhLevel.SON);
+                        assert !rightName.isEmpty();
+                        int lpos = rand.nextInt(leftName.size());
+                        int rpos = rand.nextInt(rightName.size());
+                        line = leftName.get(lpos) + "=" + rightName.get(rpos) + ";\n";
+                        generated = true;
+                        break;
+                    case METHODCALL:
+                        if (allMethods.isEmpty()) break;
+                        MethodRef currentMethod = allMethods.get(rand.nextInt(allMethods.size()));
+                        List<String> callers = new LinkedList<>();
+                        getAllVars("", currentMethod.classId, 1, vars, callers, InhLevel.SON);
+                        if (callers.isEmpty())  break;
+                        String caller = callers.get(rand.nextInt(callers.size()));
+                        String args = "";
+                        MyMethod method = currentMethod.method;
+                        boolean getArgs = true;
+                        for (Integer argClass : method.args) {
+                            List<String> candidateArg = new LinkedList<>();
+                            getAllVars("", argClass, 1, vars, candidateArg, InhLevel.SON);
+                            if (candidateArg.isEmpty()) {
+                                getArgs = false;
+                                break;
+                            }
+                            args += candidateArg.get(rand.nextInt(candidateArg.size())) + ",";
+                        }
+                        if (getArgs == false) break;
+                        args += callDepth;
+                        line = caller + "." + getMethodName(method.id) + "(" + args + ");\n";
+                        if (method.returnType != -1) {
+                            List<String> candidateReceiver = new LinkedList<>();
+                            getAllVars("", method.returnType, 1, vars, candidateReceiver, InhLevel.SUPER);
+                            candidateReceiver = removeThis(candidateReceiver);
+                            if (candidateReceiver.size() > 0 && rand.nextInt(3) > 0) {
+                                String receiver = candidateReceiver.get(rand.nextInt(candidateReceiver.size()));
+                                line = receiver + "=" + line;
+                            }
+                        }
+                        generated = true;
+                        break;
+                }
+            }
+            body += line;
+        }
+        return body;
     }
 
     private String getMethod(MyClass currentClass, MyMethod currentMethod) {
@@ -258,7 +400,8 @@ public class CodeGenerator {
         } else
             vars.add(new VarRef(currentClass.id, "this"));
 
-        String body = generateBody(rand.nextInt(maxMethodBody), vars , "depth", "depth-1");
+
+        String body = generateBody(rand.nextInt(maxMethodBody), vars , "depth", "depth-1", 0);
 
         if (currentMethod.returnType != -1) {
             String returnVar = choose(currentMethod.returnType, vars, 1);

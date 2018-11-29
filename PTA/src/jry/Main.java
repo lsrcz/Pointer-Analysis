@@ -12,7 +12,7 @@ public class Main {
 
     public static void main(String[] args) {
         String dir = "resources";
-        String className = "test.FieldSensitivity";
+        String className = "dataset.Test1";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";

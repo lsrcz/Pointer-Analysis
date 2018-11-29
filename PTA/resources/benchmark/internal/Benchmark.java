@@ -15,4 +15,8 @@ public class Benchmark {
 
 	}
 
+	public static void print() {
+
+	}
+
 }

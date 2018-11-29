@@ -65,11 +65,13 @@ public class CodeGenerator {
     int totalClasses = 0;
     int maxMethodBody = 0;
     int localId = 0;
+    int mainLines = 0;
     String mainClass = "";
 
-    public CodeGenerator(int classNum, int maxFields, int maxMethods, int _maxMethodBody, String _mainClass, Integer libNum) {
+    public CodeGenerator(int classNum, int maxFields, int maxMethods, int _maxMethodBody, String _mainClass, Integer libNum, Integer _mainLines) {
         mainClass = _mainClass;
         maxMethodBody = _maxMethodBody;
+        mainLines = _mainLines;
         getClasses(classNum, maxFields, maxMethods);
         for (int i = 1; i <= classNum; ++i) {
             int count = rand.nextInt(libNum) + 1;
@@ -144,7 +146,7 @@ public class CodeGenerator {
                 assignPhase += currentVar.name + "." + getFieldName(field.id) + " = " + rVar + ";\n";
             }
         }
-        String body = generateBody(10, vars, "inputValue", "3", 0);
+        String body = generateBody(mainLines, vars, "inputValue", "3", 0);
         String queryPhase = "";
         List<String> queryName = new LinkedList<>();
         getAllVars("", 0, 1, vars, queryName, InhLevel.SON);

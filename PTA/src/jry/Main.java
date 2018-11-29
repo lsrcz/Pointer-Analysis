@@ -12,10 +12,8 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) {
-        //String dir = "resources";
-        //String className = "dataset.Test3";
-        /*String dir = "code/src";
-        String className = "LocalTest";
+        /*String dir = "resources";
+        String className = "dataset.Test6";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
@@ -38,6 +36,6 @@ public class Main {
         ResultOperator result = new ResultOperator(fCFL.result);
         System.out.println(result);*/
         RunDataset datasetRunner = new RunDataset();
-        datasetRunner.testAllTransformerWithSingleData(4);
+        datasetRunner.testAllTransformerWithAllData();
     }
 }

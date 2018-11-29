@@ -29,22 +29,26 @@ public class CFLReachbilitySolver {
     }
 
     public void tryExtend(CFLGraph.GraphEdge edge) {
-        System.out.println("[NewEdge] " + edge.u.id + "->" + edge.v.id + " " + names.get(edge.type) + " " + edge.value);
+        // System.out.println("[NewEdge] " + edge.u.id + "->" + edge.v.id + " " + names.get(edge.type) + " " + edge.value);
+        List<CFLGraph.GraphEdge> newEdges = new LinkedList<>();
         for (Rule rootRule: rules) {
             if (rootRule instanceof BasicRule) {
                 BasicRule rule = (BasicRule)rootRule;
                 if (edge.type == rule.typeL) {
                     List<CFLGraph.GraphEdge> outEdges = edge.v.getOutByType(rule.typeR);
+
                     for (CFLGraph.GraphEdge outEdge : outEdges) {
                         CFLGraph.GraphEdge newEdge = graph.initEdge(edge.u, outEdge.v, rule.typeS, 0);
-                        if (graph.addEdge(newEdge)) Q.add(newEdge);
+                        newEdges.add(newEdge);
+                        // if (graph.addEdge(newEdge)) Q.add(newEdge);
                     }
                 }
                 if (edge.type == rule.typeR) {
                     List<CFLGraph.GraphEdge> inEdges = edge.u.getInByType(rule.typeL);
                     for (CFLGraph.GraphEdge inEdge : inEdges) {
                         CFLGraph.GraphEdge newEdge = graph.initEdge(inEdge.u, edge.v, rule.typeS, 0);
-                        if (graph.addEdge(newEdge)) Q.add(newEdge);
+                        newEdges.add(newEdge);
+                        // if (graph.addEdge(newEdge)) Q.add(newEdge);
                     }
                 }
             } else if (rootRule instanceof SpecialRule) {
@@ -55,11 +59,15 @@ public class CFLReachbilitySolver {
                         List<CFLGraph.GraphEdge> outEdges = edge.v.getOutByValue(-inEdge.type, inEdge.value);
                         for (CFLGraph.GraphEdge outEdge : outEdges) {
                             CFLGraph.GraphEdge newEdge = graph.initEdge(inEdge.u, outEdge.v, rule.typeS, 0);
-                            if (graph.addEdge(newEdge)) Q.add(newEdge);
+                            //if (graph.addEdge(newEdge)) Q.add(newEdge);
+                            newEdges.add(newEdge);
                         }
                     }
                 }
             }
+        }
+        for (CFLGraph.GraphEdge newEdge : newEdges) {
+            if (graph.addEdge(newEdge)) Q.add(newEdge);
         }
     }
 

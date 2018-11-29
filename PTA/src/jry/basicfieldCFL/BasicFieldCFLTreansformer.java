@@ -1,5 +1,6 @@
 package jry.basicfieldCFL;
 
+import jry.evaluation.AbstractPTATransformer;
 import jry.util.CFLGraphBuilder;
 import jry.util.CFLLib;
 import jry.util.CallGraphGenerator;
@@ -30,12 +31,16 @@ class AllocRef {
     }
 }
 
-public class BasicFieldCFLTreansformer extends SceneTransformer {
+public class BasicFieldCFLTreansformer extends AbstractPTATransformer {
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
     Set<SootMethod> isVisited = new HashSet<SootMethod>();
     Map<Integer, Local> queries = new TreeMap<Integer, Local>();
     int totalNew = 0;
     public Map<Integer, ArraySparseSet<Integer>> result = new TreeMap<Integer, ArraySparseSet<Integer>>();
+
+    public Map<Integer, ArraySparseSet<Integer>> getResult() {
+        return result;
+    }
 
     private Object getValue(Value var) {
         if (var instanceof ArrayRef) {
@@ -68,7 +73,7 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
 
     private void assignThis(SootMethod sMethod, Local base) {
         if (sMethod.hasActiveBody()) {
-            System.out.println(sMethod.getActiveBody());
+            // System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 if (unit instanceof DefinitionStmt) {
                     Value right = ((DefinitionStmt) unit).getRightOp();
@@ -115,15 +120,15 @@ public class BasicFieldCFLTreansformer extends SceneTransformer {
         if (isVisited.contains(sMethod)) {
             return;
         }
-        System.out.println("[New Method] " + sMethod);
+        // System.out.println("[New Method] " + sMethod);
         isVisited.add(sMethod);
         Set<SootMethod> callMethods = new HashSet<SootMethod>();
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);
-            System.out.println(sMethod.getActiveBody());
+            // System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
-                System.out.println("  [Unit] " + unit + " " + unit.getClass());
+                // System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {

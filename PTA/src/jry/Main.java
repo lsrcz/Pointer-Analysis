@@ -1,6 +1,7 @@
 package jry;
 
 import jry.basicfieldCFL.BasicFieldCFLTreansformer;
+import jry.evaluation.RunDataset;
 import jry.util.ResultOperator;
 import soot.PackManager;
 import soot.Transform;
@@ -11,7 +12,7 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) {
-        String dir = "resources";
+        /*String dir = "resources";
         String className = "dataset.Test2";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
@@ -35,6 +36,8 @@ public class Main {
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", fCFL));
         soot.Main.main(sootArgs);
         ResultOperator result = new ResultOperator(fCFL.result);
-        System.out.println(result);
+        System.out.println(result);*/
+        RunDataset datasetRunner = new RunDataset();
+        datasetRunner.testAllTransformerWithSingleData(3);
     }
 }

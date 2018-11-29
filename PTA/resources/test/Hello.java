@@ -14,8 +14,8 @@ public class Hello {
     A c = new A();
     if (args.length > 1) a = b;
     //if (args.length > 1) c = a;
-    Benchmark.test(1, a); 
-    Benchmark.test(2, b);
-    Benchmark.test(3, c); 
+    Benchmark.test(1, a); // 1, 2
+    Benchmark.test(2, b); // 2
+    Benchmark.test(3, c); // 3
   }
 }

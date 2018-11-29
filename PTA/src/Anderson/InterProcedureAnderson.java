@@ -20,7 +20,7 @@ public class InterProcedureAnderson extends ForwardInterProceduralAnalysis<SootM
     private static final Local RETURN_LOCAL = new JimpleLocal("@return", IntType.v());
 
     public InterProcedureAnderson() {
-        verbose = false;
+        verbose = true;
     }
 
     private Local getLocal(Value value) {

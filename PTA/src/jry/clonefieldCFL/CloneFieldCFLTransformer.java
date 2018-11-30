@@ -1,10 +1,7 @@
 package jry.clonefieldCFL;
 
 import jry.evaluation.AbstractPTATransformer;
-import jry.util.CFLGraphBuilder;
-import jry.util.CFLLib;
-import jry.util.CallGraphGenerator;
-import jry.util.ResultOperator;
+import jry.util.*;
 import soot.*;
 import soot.jimple.*;
 import soot.toolkits.scalar.ArraySparseSet;
@@ -14,27 +11,6 @@ import vasco.callgraph.CallGraphTransformer;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
-
-class AllocRef {
-    Integer id;
-
-    @Override
-    public int hashCode() {
-        return ("AllocRef" + id).hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof AllocRef)) {
-            return false;
-        }
-        return id.equals(((AllocRef) obj).id);
-    }
-
-    public AllocRef(int _id) {
-        id = _id;
-    }
-}
 
 class MethodWithCallsite {
     private ArrayList<Pair<SootMethod, Integer>> cloneStack;
@@ -79,7 +55,7 @@ class MethodWithCallsite {
     }
 }
 
-public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
+public class CloneFieldCFLTransformer extends AbstractPTATransformer {
     int depth = 2;
     Set<MethodWithCallsite> nodeList = new HashSet<>();
     SootMethod DUMMY_METHOD;
@@ -123,9 +99,9 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                             callStack.addFirst(new Pair<>(sMethod, 1)); // dummy
                             MethodWithCallsite leftm = new MethodWithCallsite(left, sMethod, depth, callStack);
                             callStack.removeFirst();
-                            System.out.println("-----");
+                            /*System.out.println("-----");
                             System.out.println(wherem);
-                            System.out.println(leftm);
+                            System.out.println(leftm);*/
                             nodeList.add(wherem);
                             nodeList.add(leftm);
                             graphBuilder.addEdge(wherem, leftm, 3, 0);
@@ -150,9 +126,9 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                             callStack.addFirst(new Pair<>(sMethod, 1)); // dummy
                             MethodWithCallsite leftm = new MethodWithCallsite(left, sMethod, depth, callStack);
                             callStack.removeFirst();
-                            System.out.println("-----");
+                            /*System.out.println("-----");
                             System.out.println(basem);
-                            System.out.println(leftm);
+                            System.out.println(leftm);*/
                             nodeList.add(basem);
                             nodeList.add(leftm);
                             graphBuilder.addEdge(basem, leftm, 3, 0);
@@ -161,9 +137,9 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                             Local LeftBase = (Local) (((InstanceFieldRef) left).getBase());
                             MethodWithCallsite LeftBasem = new MethodWithCallsite(LeftBase, sMethod, depth, callStack);
                             MethodWithCallsite basem = new MethodWithCallsite(base, sMethod, depth, callStack);
-                            System.out.println("-----");
+                            /*System.out.println("-----");
                             System.out.println(LeftBasem);
-                            System.out.println(basem);
+                            System.out.println(basem);*/
                             nodeList.add(LeftBasem);
                             nodeList.add(basem);
                             graphBuilder.addEdge(basem, LeftBasem, 4, ((InstanceFieldRef) left).getFieldRef());
@@ -261,16 +237,16 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                         }
                     }
                     if (right instanceof NewExpr) {
-                        System.out.println("-----");
-                        System.out.println(leftm);
+                        //System.out.println("-----");
+                        //System.out.println(leftm);
                         nodeList.add(leftm);
                         graphBuilder.addEdge(allocRef, leftm, 1, 0);
                         graphBuilder.addEdge(leftm, allocRef, -1, 0);
                     } else if ((right instanceof Local) || (right instanceof SootFieldRef)) {
                         if ((left instanceof Local) || (left instanceof SootFieldRef)) {
-                            System.out.println("-----");
+                            /*System.out.println("-----");
                             System.out.println(leftm);
-                            System.out.println(rightm);
+                            System.out.println(rightm);*/
                             nodeList.add(leftm);
                             nodeList.add(rightm);
                             graphBuilder.addEdge(rightm, leftm, 3, 0);
@@ -278,9 +254,9 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                         } else if (left instanceof InstanceFieldRef) {
                             Local base = (Local) (((InstanceFieldRef) left).getBase());
                             MethodWithCallsite basem = new MethodWithCallsite(base, sMethod, depth, callStack);
-                            System.out.println("-----");
+                            /*System.out.println("-----");
                             System.out.println(basem);
-                            System.out.println(rightm);
+                            System.out.println(rightm);*/
                             nodeList.add(basem);
                             nodeList.add(rightm);
                             graphBuilder.addEdge(rightm, basem, 4, ((InstanceFieldRef) left).getFieldRef());
@@ -291,9 +267,9 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                     } else if (right instanceof InstanceFieldRef) {
                         Local base = (Local) ((InstanceFieldRef) right).getBase();
                         MethodWithCallsite basem = new MethodWithCallsite(base, sMethod, depth, callStack);
-                        System.out.println("-----");
+                        /*System.out.println("-----");
                         System.out.println(basem);
-                        System.out.println(leftm);
+                        System.out.println(leftm);*/
                         nodeList.add(basem);
                         nodeList.add(leftm);
                         graphBuilder.addEdge(basem, leftm, -4, ((InstanceFieldRef) right).getFieldRef());
@@ -310,9 +286,9 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                                 // Object returnObj = getReturnObj(nextMethod);
                                 callStack.addFirst(new Pair<>(sMethod, line)); // dummy
                                 MethodWithCallsite returnm = new MethodWithCallsite(returnObj, nextMethod, depth, callStack);
-                                System.out.println("-----");
+                                /*System.out.println("-----");
                                 System.out.println(returnm);
-                                System.out.println(leftm);
+                                System.out.println(leftm);*/
                                 nodeList.add(returnm);
                                 nodeList.add(leftm);
                                 callStack.removeFirst();
@@ -358,7 +334,7 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
     }
 
     public static void main(String args[]) {
-        CloneFieldCFLTreansformer ipat = new CloneFieldCFLTreansformer();
+        CloneFieldCFLTransformer ipat = new CloneFieldCFLTransformer();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
         String dir = "./resources";

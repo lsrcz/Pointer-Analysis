@@ -2,10 +2,7 @@ package jry.basicfieldCFL;
 
 import jry.evaluation.AbstractPTATransformer;
 import jry.evaluation.LogPTATransformer;
-import jry.util.CFLGraphBuilder;
-import jry.util.CFLLib;
-import jry.util.CallGraphGenerator;
-import jry.util.ResultOperator;
+import jry.util.*;
 import soot.*;
 import soot.jimple.*;
 import soot.toolkits.scalar.ArraySparseSet;
@@ -15,26 +12,6 @@ import soot.util.Chain;
 import java.io.File;
 import java.util.*;
 
-class AllocRef {
-    Integer id;
-
-    @Override
-    public int hashCode() {
-        return ("AllocRef" + id).hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof AllocRef)) {
-            return false;
-        }
-        return id.equals(((AllocRef) obj).id);
-    }
-
-    public AllocRef(int _id) {
-        id = _id;
-    }
-}
 
 public class BasicFieldCFLTransformer extends LogPTATransformer {
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();

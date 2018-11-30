@@ -1,6 +1,8 @@
 package jry;
 
 import jry.basicfieldCFL.BasicFieldCFLTransformer;
+import jry.clonefieldCFL.CloneFieldCFLTransformer;
+import jry.evaluation.AbstractPTATransformer;
 import jry.evaluation.RunDataset;
 import jry.util.ResultOperator;
 import soot.PackManager;
@@ -8,6 +10,8 @@ import soot.Transform;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class Main {
 
@@ -36,7 +40,10 @@ public class Main {
         ResultOperator result = new ResultOperator(fCFL.result);
         System.out.println(result);
         */
-        RunDataset datasetRunner = new RunDataset();
+        ArrayList<Class<? extends AbstractPTATransformer>> allList = new ArrayList<>();
+        //allList.add(BasicFieldCFLTransformer.class);
+        allList.add(CloneFieldCFLTransformer.class);
+        RunDataset datasetRunner = new RunDataset(allList);
         datasetRunner.testAllTransformerWithAllData();
     }
 }

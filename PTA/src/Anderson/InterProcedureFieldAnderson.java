@@ -20,9 +20,10 @@ import java.util.*;
 
 public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> {
     private static final Local RETURN_LOCAL = new JimpleLocal("@return", IntType.v());
+    private Unit uu;
 
     public InterProcedureFieldAnderson() {
-        verbose = true;
+        verbose = false;
     }
 
     private Local getLocal(Value value) {
@@ -119,6 +120,7 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
             Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
         Map<Object, FlowSet<NewExpr>> outValue = this.copy(localFlowSetMap);
         Value lhsOp;
+        uu = unit;
         if (unit instanceof AssignStmt) {
             lhsOp = ((AssignStmt)unit).getLeftOp();
             Value rhsOp = ((AssignStmt)unit).getRightOp();
@@ -136,6 +138,7 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
             SootMethod sootMethod,
             Unit unit,
             Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
+        uu = unit;
         Map<Object, FlowSet<NewExpr>> entryValue = this.copy(localFlowSetMap);
         //Map<Object, FlowSet<NewExpr>> entryValue = this.topValue();
         InvokeExpr ie = ((Stmt)unit).getInvokeExpr();
@@ -159,6 +162,7 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
             SootMethod sootMethod,
             Unit unit,
             Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
+        uu = unit;
         Map<Object, FlowSet<NewExpr>> afterCallValue = this.copy(localFlowSetMap);
         //Map<Object, FlowSet<NewExpr>> afterCallValue = this.topValue();
         if (unit instanceof AssignStmt) {
@@ -171,6 +175,7 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
     @Override
     public Map<Object, FlowSet<NewExpr>> callLocalFlowFunction(Context<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> context, Unit unit, Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
         Map<Object, FlowSet<NewExpr>> afterCallValue = this.copy(localFlowSetMap);
+        uu = unit;
         if (unit instanceof AssignStmt) {
             Value lhsOp = ((AssignStmt)unit).getLeftOp();
             afterCallValue.remove(lhsOp);
@@ -187,15 +192,15 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
     @Override
     public Map<Object, FlowSet<NewExpr>> copy(Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
         // efficient?
-        /*
-        Map<Local, FlowSet<NewExpr>> ret = new HashMap<>();
-        for (Local l: localFlowSetMap.keySet()) {
+
+        Map<Object, FlowSet<NewExpr>> ret = new HashMap<>();
+        for (Object l: localFlowSetMap.keySet()) {
             ret.put(l, new ArraySparseSet<>());
             localFlowSetMap.get(l).copy(ret.get(l));
         }
-        return ret;*/
+        return ret;
         // error?
-        return new HashMap<>(localFlowSetMap);
+        //return new HashMap<>(localFlowSetMap);
     }
 
     @Override

@@ -14,6 +14,6 @@ public class Test {
         ArrayList<Class<? extends AbstractPTATransformer>> l = new ArrayList<>();
         l.add(InterProcedureAndersonTrans.class);
         RunDataset r = new RunDataset(l);
-        r.testAllTransformerWithSingleData(60);
+        r.testAllTransformerWithAllData();
     }
 }

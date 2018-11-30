@@ -15,7 +15,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 public class RunDataset {
-    final int datasetSize = 15;
+    final int datasetSize = 30;
     ArrayList<Class<? extends AbstractPTATransformer>> allTransformer = new ArrayList<>();
 
     public RunDataset(){
@@ -140,9 +140,9 @@ public class RunDataset {
                 if (allMerge == null) allMerge = currentRes.clone();
                 else allMerge.intersection(currentRes, allMerge);
                 resultSize[id] += currentRes.size();
-                mergeSize += allMerge.size();
                 id += 1;
             }
+            mergeSize += allMerge.size();
         }
         resultSize[allResult.size()] = mergeSize;
         return resultSize;

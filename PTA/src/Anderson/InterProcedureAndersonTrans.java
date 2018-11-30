@@ -8,6 +8,7 @@ import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import utils.DataFlowSolutionToResultOperator;
 import vasco.DataFlowSolution;
+import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
@@ -36,15 +37,31 @@ public class InterProcedureAndersonTrans extends AbstractPTATransformer {
 
     public static void main(String args[]) {
         InterProcedureAndersonTrans ipat = new InterProcedureAndersonTrans();
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
+        //PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
+        //PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
         String dir = "./resources";
         String classpath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "jry.Test";
+        String className = "dataset.Test60";
 
+        soot.Main.main(new String[]{
+                "-W",
+                "-O",
+                "-soot-class-path", classpath,
+                "-main-class", className,
+                "-f", "J",
+                className
+        });
+        soot.G.reset();
+        VascoClearer.clear();
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
+        String optimized = "./sootOutput";
+        classpath = optimized
+                + File.pathSeparator + dir + File.separator + "rt.jar"
+                + File.pathSeparator + dir + File.separator + "jce.jar";
         soot.Main.main(new String[]{
                 "-w",
                 "-app", "-pp",
@@ -62,5 +79,6 @@ public class InterProcedureAndersonTrans extends AbstractPTATransformer {
                 "-f", "J",
                 className
         });
+
     }
 }

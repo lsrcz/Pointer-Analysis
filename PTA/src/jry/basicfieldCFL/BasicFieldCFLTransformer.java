@@ -97,14 +97,15 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
     }
 
 
-    private Local getReturnObj(SootMethod sMethod) {
+    private List<Local> getReturnObj(SootMethod sMethod) {
+        List<Local> results = new LinkedList<>();
         for (Unit unit : sMethod.getActiveBody().getUnits()) {
             if (unit instanceof ReturnStmt) {
-                return (Local)((ReturnStmt)unit).getOp();
+                results.add((Local)((ReturnStmt) unit).getOp());
             }
         }
-        assert false;
-        return null;
+        assert !results.isEmpty();
+        return results;
     }
 
     private void resolveCall(SootMethod sMethod, InvokeExpr ie) {
@@ -178,13 +179,15 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
                         for (SootMethod nextMethod : nextMethods) {
                             callMethods.add(nextMethod);
                             resolveCall(nextMethod, ie);
-                            Object returnObj = getReturnObj(nextMethod);
-                            if ((left instanceof Local) || (left instanceof SootField)) {
-                                graphBuilder.addEdge(returnObj, left, 3, 0);
-                                graphBuilder.addEdge(left, returnObj, -3, 0);
-                            } else if (left instanceof InstanceFieldRef) {
-                                graphBuilder.addEdge(left, returnObj, 4, ((InstanceFieldRef) left).getFieldRef());
-                                graphBuilder.addEdge(returnObj, left, -5, ((InstanceFieldRef) left).getFieldRef());
+                            List<Local> returnObjs = getReturnObj(nextMethod);
+                            for (Local returnObj: returnObjs) {
+                                if ((left instanceof Local) || (left instanceof SootField)) {
+                                    graphBuilder.addEdge(returnObj, left, 3, 0);
+                                    graphBuilder.addEdge(left, returnObj, -3, 0);
+                                } else if (left instanceof InstanceFieldRef) {
+                                    graphBuilder.addEdge(left, returnObj, 4, ((InstanceFieldRef) left).getFieldRef());
+                                    graphBuilder.addEdge(returnObj, left, -5, ((InstanceFieldRef) left).getFieldRef());
+                                }
                             }
                         }
                     } else if (right instanceof Constant) {

@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
         /*String dir = "resources";
-        String className = "dataset.Test6";
+        String className = "dataset.Test8";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";

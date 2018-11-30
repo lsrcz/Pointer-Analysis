@@ -88,7 +88,7 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
                             graphBuilder.addEdge(left, base, -3, 0);
                         } else if (left instanceof InstanceFieldRef) {
                             Local LeftBase = (Local) (((InstanceFieldRef) left).getBase());
-                            graphBuilder.addEdge(base, LeftBase, 4, ((InstanceFieldRef) left).getFieldRef());
+                            graphBuilder.addEdge(base, LeftBase, 4, ((InstanceFieldRef) left).getField());
                             graphBuilder.addEdge(LeftBase, base, -5, ((InstanceFieldRef) left).getField());
                         } else {
                             assert false;

@@ -289,20 +289,25 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                                 /*System.out.println("-----");
                                 System.out.println(returnm);
                                 System.out.println(leftm);*/
-                                nodeList.add(returnm);
-                                nodeList.add(leftm);
                                 callStack.removeFirst();
                                 if ((left instanceof Local) || (left instanceof SootFieldRef)) {
+                                    nodeList.add(returnm);
+                                    nodeList.add(leftm);
                                     graphBuilder.addEdge(returnm, leftm, 3, 0);
                                     graphBuilder.addEdge(leftm, returnm, -3, 0);
                                 } else if (left instanceof InstanceFieldRef) {
-                                    graphBuilder.addEdge(leftm, returnm, 4, ((InstanceFieldRef) left).getField());
-                                    graphBuilder.addEdge(returnm, leftm, -5, ((InstanceFieldRef) left).getField());
+                                    Local base = (Local) (((InstanceFieldRef) left).getBase());
+                                    SootObjectWithCallsite basem = new SootObjectWithCallsite(base, sMethod, depth, callStack);
+                                    nodeList.add(returnm);
+                                    nodeList.add(basem);
+                                    graphBuilder.addEdge(basem, returnm, 4, ((InstanceFieldRef) left).getField());
+                                    graphBuilder.addEdge(returnm, basem, -5, ((InstanceFieldRef) left).getField());
                                 }
                             }
                         }
                     } else if (right instanceof Constant) {
                     } else if (right instanceof ThisRef || right instanceof BinopExpr || right instanceof UnopExpr) {
+                    } else if (right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
                     } else assert false;
                 } else
                     assert CallGraphGenerator.resolveTarget(unit).isEmpty();

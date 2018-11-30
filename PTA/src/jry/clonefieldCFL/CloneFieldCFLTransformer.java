@@ -79,7 +79,7 @@ class MethodWithCallsite {
     }
 }
 
-public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
+public class CloneFieldCFLTransformer extends AbstractPTATransformer {
     int depth = 2;
     Set<MethodWithCallsite> nodeList = new HashSet<>();
     SootMethod DUMMY_METHOD;
@@ -358,7 +358,7 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
     }
 
     public static void main(String args[]) {
-        CloneFieldCFLTreansformer ipat = new CloneFieldCFLTreansformer();
+        CloneFieldCFLTransformer ipat = new CloneFieldCFLTransformer();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
         String dir = "./resources";

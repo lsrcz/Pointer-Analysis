@@ -12,12 +12,12 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
-class MethodWithCallsite {
+class SootObjectWithCallsite {
     private ArrayList<Pair<SootMethod, Integer>> cloneStack;
     Object u;
     SootMethod m;
 
-    MethodWithCallsite(Object u, SootMethod m, int depth, LinkedList<Pair<SootMethod, Integer>> callStack) {
+    SootObjectWithCallsite(Object u, SootMethod m, int depth, LinkedList<Pair<SootMethod, Integer>> callStack) {
         cloneStack = new ArrayList<>();
         this.u = u;
         this.m = m;
@@ -34,10 +34,10 @@ class MethodWithCallsite {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof MethodWithCallsite)) {
+        if (!(obj instanceof SootObjectWithCallsite)) {
             return false;
         }
-        MethodWithCallsite obj1 = (MethodWithCallsite)obj;
+        SootObjectWithCallsite obj1 = (SootObjectWithCallsite)obj;
         return cloneStack.equals(obj1.cloneStack) && u.equals(obj1.u) && m.equals(obj1.m);
     }
 
@@ -57,13 +57,13 @@ class MethodWithCallsite {
 
 public class CloneFieldCFLTransformer extends AbstractPTATransformer {
     int depth = 2;
-    Set<MethodWithCallsite> nodeList = new HashSet<>();
+    Set<SootObjectWithCallsite> nodeList = new HashSet<>();
     SootMethod DUMMY_METHOD;
 
 
 
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
-    Set<MethodWithCallsite> isVisited = new HashSet<MethodWithCallsite>();
+    Set<SootObjectWithCallsite> isVisited = new HashSet<SootObjectWithCallsite>();
     Map<Integer, Local> queries = new TreeMap<Integer, Local>();
     LinkedList<Pair<SootMethod, Integer>> callStack = new LinkedList<>();
     int totalNew = 0;
@@ -94,10 +94,10 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                         if (args.get(where) instanceof Local) {
                             // System.out.println("    [Link] " + left + " " + args.get(where));
                             // Pair<SootMethod, Integer> head = callStack.removeFirst();
-                            MethodWithCallsite wherem = new MethodWithCallsite(args.get(where), oldMethod, depth, callStack);
+                            SootObjectWithCallsite wherem = new SootObjectWithCallsite(args.get(where), oldMethod, depth, callStack);
                             // callStack.addFirst(head);
                             callStack.addFirst(new Pair<>(sMethod, 1)); // dummy
-                            MethodWithCallsite leftm = new MethodWithCallsite(left, sMethod, depth, callStack);
+                            SootObjectWithCallsite leftm = new SootObjectWithCallsite(left, sMethod, depth, callStack);
                             callStack.removeFirst();
                             /*System.out.println("-----");
                             System.out.println(wherem);
@@ -122,9 +122,9 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                     if (right instanceof ThisRef) {
                         if ((left instanceof Local) || (left instanceof SootFieldRef)) {
-                            MethodWithCallsite basem = new MethodWithCallsite(base, oldMethod, depth, callStack);
+                            SootObjectWithCallsite basem = new SootObjectWithCallsite(base, oldMethod, depth, callStack);
                             callStack.addFirst(new Pair<>(sMethod, 1)); // dummy
-                            MethodWithCallsite leftm = new MethodWithCallsite(left, sMethod, depth, callStack);
+                            SootObjectWithCallsite leftm = new SootObjectWithCallsite(left, sMethod, depth, callStack);
                             callStack.removeFirst();
                             /*System.out.println("-----");
                             System.out.println(basem);
@@ -135,8 +135,8 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                             graphBuilder.addEdge(leftm, basem, -3, 0);
                         } else if (left instanceof InstanceFieldRef) {
                             Local LeftBase = (Local) (((InstanceFieldRef) left).getBase());
-                            MethodWithCallsite LeftBasem = new MethodWithCallsite(LeftBase, sMethod, depth, callStack);
-                            MethodWithCallsite basem = new MethodWithCallsite(base, sMethod, depth, callStack);
+                            SootObjectWithCallsite LeftBasem = new SootObjectWithCallsite(LeftBase, sMethod, depth, callStack);
+                            SootObjectWithCallsite basem = new SootObjectWithCallsite(base, sMethod, depth, callStack);
                             /*System.out.println("-----");
                             System.out.println(LeftBasem);
                             System.out.println(basem);*/
@@ -179,7 +179,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
 
     private void dfsMethod(SootMethod sMethod) {
         callStack.addFirst(new Pair<>(sMethod, 1)); // dummy
-        MethodWithCallsite methodWithCallsite = new MethodWithCallsite(sMethod, sMethod, depth, callStack);
+        SootObjectWithCallsite methodWithCallsite = new SootObjectWithCallsite(sMethod, sMethod, depth, callStack);
         callStack.removeFirst();
         if (isVisited.contains(methodWithCallsite)) {
             return;
@@ -220,12 +220,12 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                     Object right = getValue(((DefinitionStmt) unit).getRightOp());
                     // System.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
-                    MethodWithCallsite leftm = new MethodWithCallsite(left, sMethod, depth, callStack);
-                    MethodWithCallsite rightm = new MethodWithCallsite(right, sMethod, depth, callStack);
+                    SootObjectWithCallsite leftm = new SootObjectWithCallsite(left, sMethod, depth, callStack);
+                    SootObjectWithCallsite rightm = new SootObjectWithCallsite(right, sMethod, depth, callStack);
                     if (left instanceof SootFieldRef) {
                         if (((SootFieldRef)left).isStatic()) {
                             SootFieldRef sfr = (SootFieldRef)left;
-                            leftm = new MethodWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
+                            leftm = new SootObjectWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
                             //leftm = new MethodWithCallsite(left, DUMMY_METHOD, depth, new LinkedList<>());
                         }
                     }
@@ -233,7 +233,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                         if (((SootFieldRef)right).isStatic()) {
                             //rightm = new MethodWithCallsite(right, DUMMY_METHOD, depth, new LinkedList<>());
                             SootFieldRef sfr = (SootFieldRef)right;
-                            rightm = new MethodWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
+                            rightm = new SootObjectWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
                         }
                     }
                     if (right instanceof NewExpr) {
@@ -253,7 +253,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                             graphBuilder.addEdge(leftm, rightm, -3, 0);
                         } else if (left instanceof InstanceFieldRef) {
                             Local base = (Local) (((InstanceFieldRef) left).getBase());
-                            MethodWithCallsite basem = new MethodWithCallsite(base, sMethod, depth, callStack);
+                            SootObjectWithCallsite basem = new SootObjectWithCallsite(base, sMethod, depth, callStack);
                             /*System.out.println("-----");
                             System.out.println(basem);
                             System.out.println(rightm);*/
@@ -266,7 +266,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                         }
                     } else if (right instanceof InstanceFieldRef) {
                         Local base = (Local) ((InstanceFieldRef) right).getBase();
-                        MethodWithCallsite basem = new MethodWithCallsite(base, sMethod, depth, callStack);
+                        SootObjectWithCallsite basem = new SootObjectWithCallsite(base, sMethod, depth, callStack);
                         /*System.out.println("-----");
                         System.out.println(basem);
                         System.out.println(leftm);*/
@@ -285,7 +285,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                             for (Object returnObj : getReturnObj(nextMethod)) {
                                 // Object returnObj = getReturnObj(nextMethod);
                                 callStack.addFirst(new Pair<>(sMethod, line)); // dummy
-                                MethodWithCallsite returnm = new MethodWithCallsite(returnObj, nextMethod, depth, callStack);
+                                SootObjectWithCallsite returnm = new SootObjectWithCallsite(returnObj, nextMethod, depth, callStack);
                                 /*System.out.println("-----");
                                 System.out.println(returnm);
                                 System.out.println(leftm);*/
@@ -324,8 +324,8 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
         callStack.removeFirst();
         graphBuilder.doAnalysis(CFLLib.FieldCFL, CFLLib.FieldCFLName);
         for (Map.Entry<Integer, Local> entry : queries.entrySet()) {
-            List<MethodWithCallsite> entries = nodeList.stream().filter(n -> n.u.equals(entry.getValue())).collect(Collectors.toList());
-            for (MethodWithCallsite m : entries) {
+            List<SootObjectWithCallsite> entries = nodeList.stream().filter(n -> n.u.equals(entry.getValue())).collect(Collectors.toList());
+            for (SootObjectWithCallsite m : entries) {
                 if (!result.containsKey(entry.getKey()))
                     result.put(entry.getKey(), new ArraySparseSet<>());
                 result.get(entry.getKey()).union(graphBuilder.getPointTo(m, -2));
@@ -342,7 +342,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "dataset.Test8";
+        String className = "dataset.Test6";
 
         soot.Main.main(new String[]{
                 "-w",

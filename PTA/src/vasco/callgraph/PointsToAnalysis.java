@@ -104,9 +104,8 @@ public class PointsToAnalysis extends OldForwardInterProceduralAnalysis<SootMeth
 		
 		// Play around with these flags
 		this.freeResultsOnTheFly = true;
-		// this.verbose = true;
-        this.verbose = false;
-		
+		this.verbose = false;
+
 		// No classes statically initialised yet
 		this.clinitCalled = new HashSet<SootClass>();
 		
@@ -474,7 +473,7 @@ public class PointsToAnalysis extends OldForwardInterProceduralAnalysis<SootMeth
 			targets = getDummyTarget();			
 			this.contextTransitions.addTransition(new CallSite<SootMethod,Unit,PointsToGraph>(callerContext, callStmt), null);
 			if (verbose) {
-				System.out.println("[DEF] X" + callerContext + " -> DEFAULT " + ie.getMethod());
+				// System.out.println("[DEF] X" + callerContext + " -> DEFAULT " + ie.getMethod());
 			}
 		} 
 		

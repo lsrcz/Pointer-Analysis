@@ -48,9 +48,9 @@ import soot.jimple.internal.JimpleLocal;
  * A data flow value representation for points-to analysis using allocation sites.
  * 
  * <p>The points-to graph contains two types of edges: (1) from root variables
- * ({@link Local Local}) to objects represented by allocation
- * sites ({@link AnyNewExpr AnyNewExpr}),
- * and (2) from objects to objects along fields ({@link SootField SootField}).</p>
+ * ({@link soot.Local Local}) to objects represented by allocation
+ * sites ({@link soot.jimple.AnyNewExpr AnyNewExpr}),
+ * and (2) from objects to objects along fields ({@link soot.SootField SootField}).</p>
  * 
  * <p>Special artificial locals are used for string constants, class constants,
  * return values, etc. and artificial sites are used for summary nodes. For arrays

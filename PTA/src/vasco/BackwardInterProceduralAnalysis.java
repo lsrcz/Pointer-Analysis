@@ -122,7 +122,7 @@ public abstract class BackwardInterProceduralAnalysis<M,N,A> extends InterProced
 						if (targetContext == null) {
 							targetContext = initContext(targetMethod, exitValue);
 							if (verbose) {
-								System.out.println("[NEW] X" + currentContext + " -> X" + targetContext + " " + targetMethod + " ");
+								// System.out.println("[NEW] X" + currentContext + " -> X" + targetContext + " " + targetMethod + " ");
 							}
 							//System.out.println("EXIT(X"+targetContext+") = " + exitValue);
 						}
@@ -134,7 +134,7 @@ public abstract class BackwardInterProceduralAnalysis<M,N,A> extends InterProced
 						if (targetContext.isAnalysed()) {
 							hit = true;
 							if (verbose) {
-								System.out.println("[HIT] X" + currentContext + " -> X" + targetContext + " " + targetMethod + " ");
+								// System.out.println("[HIT] X" + currentContext + " -> X" + targetContext + " " + targetMethod + " ");
 							}
 							A entryValue = targetContext.getEntryValue();
 							//System.out.println("ENTRY(X"+targetContext+") = " + entryValue);

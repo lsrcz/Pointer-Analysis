@@ -1,5 +1,6 @@
 package Anderson;
 
+import jry.evaluation.LogPTATransformer;
 import jry.util.ResultOperator;
 import jry.evaluation.AbstractPTATransformer;
 import soot.*;
@@ -14,7 +15,7 @@ import java.io.File;
 import java.util.Map;
 import jry.util.*;
 
-public class InterProcedureAndersonTrans extends AbstractPTATransformer {
+public class InterProcedureAndersonTrans extends LogPTATransformer {
     private InterProcedureFieldAnderson analysis;
     private DataFlowSolutionToResultOperator solutionToResultOp;
     private Map<Integer, ArraySparseSet<Integer>> result;
@@ -24,7 +25,7 @@ public class InterProcedureAndersonTrans extends AbstractPTATransformer {
     }
 
     @Override
-    protected void internalTransform(String s, Map<String, String> map) {
+    protected void myInternalTransform(String s, Map<String, String> map) {
         solutionToResultOp = new DataFlowSolutionToResultOperator();
         analysis = new InterProcedureFieldAnderson();
         analysis.doAnalysis();
@@ -43,7 +44,7 @@ public class InterProcedureAndersonTrans extends AbstractPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.FieldSensitivity";
+        String className = "dataset.Test31";
 
         soot.Main.main(new String[]{
                 "-w",

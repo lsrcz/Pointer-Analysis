@@ -166,8 +166,8 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                             System.out.println(basem);
                             nodeList.add(LeftBasem);
                             nodeList.add(basem);
-                            graphBuilder.addEdge(basem, LeftBasem, 4, ((InstanceFieldRef) left).getFieldRef());
-                            graphBuilder.addEdge(LeftBasem, basem, -5, ((InstanceFieldRef) left).getFieldRef());
+                            graphBuilder.addEdge(basem, LeftBasem, 4, ((InstanceFieldRef) left).getField());
+                            graphBuilder.addEdge(LeftBasem, basem, -5, ((InstanceFieldRef) left).getField());
                         } else {
                             assert false;
                         }
@@ -283,8 +283,8 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                             System.out.println(rightm);
                             nodeList.add(basem);
                             nodeList.add(rightm);
-                            graphBuilder.addEdge(rightm, basem, 4, ((InstanceFieldRef) left).getFieldRef());
-                            graphBuilder.addEdge(basem, rightm, -5, ((InstanceFieldRef) left).getFieldRef());
+                            graphBuilder.addEdge(rightm, basem, 4, ((InstanceFieldRef) left).getField());
+                            graphBuilder.addEdge(basem, rightm, -5, ((InstanceFieldRef) left).getField());
                         } else {
                             assert false;
                         }
@@ -296,8 +296,8 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                         System.out.println(leftm);
                         nodeList.add(basem);
                         nodeList.add(leftm);
-                        graphBuilder.addEdge(basem, leftm, -4, ((InstanceFieldRef) right).getFieldRef());
-                        graphBuilder.addEdge(leftm, basem, 5, ((InstanceFieldRef) right).getFieldRef());
+                        graphBuilder.addEdge(basem, leftm, -4, ((InstanceFieldRef) right).getField());
+                        graphBuilder.addEdge(leftm, basem, 5, ((InstanceFieldRef) right).getField());
                     } else if (right instanceof ParameterRef) {
                     } else if (right instanceof InvokeExpr){
                         InvokeExpr ie = (InvokeExpr)right;
@@ -320,8 +320,8 @@ public class CloneFieldCFLTreansformer extends AbstractPTATransformer {
                                     graphBuilder.addEdge(returnm, leftm, 3, 0);
                                     graphBuilder.addEdge(leftm, returnm, -3, 0);
                                 } else if (left instanceof InstanceFieldRef) {
-                                    graphBuilder.addEdge(leftm, returnm, 4, ((InstanceFieldRef) left).getFieldRef());
-                                    graphBuilder.addEdge(returnm, leftm, -5, ((InstanceFieldRef) left).getFieldRef());
+                                    graphBuilder.addEdge(leftm, returnm, 4, ((InstanceFieldRef) left).getField());
+                                    graphBuilder.addEdge(returnm, leftm, -5, ((InstanceFieldRef) left).getField());
                                 }
                             }
                         }

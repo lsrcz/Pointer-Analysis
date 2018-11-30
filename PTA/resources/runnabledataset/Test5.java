@@ -9,16 +9,17 @@ public static Test5Class2 local3;
 public static Test5Class2 local4;
 }
 class Test5Class1 extends BasicClass {
-public static Test5Class1 field1;
+public static Test5Class2 field1;
 public static Test5Class1 field2;
-public static void method1(Test5Class2 arg0, int depth) {
-if (depth == 0) return;
+public Test5Class1 method1(int depth) {
+if (depth == 0) return Test5Lib.local1;
+return this.field2;
 }
 }
 class Test5Class2 extends Test5Class1 {
-public Test5Class2 field3;
-public static Test5Class2 field4;
-public void method2(Test5Class1 arg0, Test5Class2 arg1, int depth) {
+public static Test5Class1 field3;
+public Test5Class2 field4;
+public static void method2(Test5Class2 arg0, Test5Class2 arg1, int depth) {
 if (depth == 0) return;
 }
 }
@@ -33,27 +34,70 @@ Benchmark.alloc(3);
 Test5Lib.local3 = new Test5Class2();
 Benchmark.alloc(4);
 Test5Lib.local4 = new Test5Class2();
-Test5Lib.local1.field1 = Test5Lib.local2;
-Test5Lib.local1.field2 = Test5Lib.local3;
-Test5Lib.local2.field1 = Test5Lib.local3;
-Test5Lib.local2.field2 = Test5Lib.local3;
-Test5Lib.local3.field3 = Test5Lib.local4;
+Test5Lib.local1.field1 = Test5Lib.local4;
+Test5Lib.local1.field2 = Test5Lib.local4;
+Test5Lib.local2.field1 = Test5Lib.local4;
+Test5Lib.local2.field2 = Test5Lib.local4;
+Test5Lib.local3.field3 = Test5Lib.local2;
 Test5Lib.local3.field4 = Test5Lib.local3;
-Test5Lib.local3.field1 = Test5Lib.local1;
-Test5Lib.local3.field2 = Test5Lib.local3;
+Test5Lib.local3.field1 = Test5Lib.local4;
+Test5Lib.local3.field2 = Test5Lib.local2;
 Test5Lib.local4.field3 = Test5Lib.local4;
-Test5Lib.local4.field4 = Test5Lib.local4;
-Test5Lib.local4.field1 = Test5Lib.local2;
-Test5Lib.local4.field2 = Test5Lib.local1;
-for (int local5 = 0; local5<=2; local5 += 1) {
-for (int local6 = 0; local6<=3; local6 += 1) {
-Test5Lib.local3.field3.method2(Test5Lib.local4.field2,Test5Lib.local3,3);
+Test5Lib.local4.field4 = Test5Lib.local3;
+Test5Lib.local4.field1 = Test5Lib.local3;
+Test5Lib.local4.field2 = Test5Lib.local2;
+Test5Lib.local4.field3=Test5Lib.local1.method1(3);
+for (int local5 = 0; local5<=1; local5 += 1) {
+Test5Lib.local1.field1.method2(Test5Lib.local3,Test5Lib.local3,3);
+}
+Test5Lib.local4.field4.method2(Test5Lib.local3.field1,Test5Lib.local1.field1,3);
+for (int local6 = 0; local6<=1; local6 += 1) {
+for (int local7 = 0; local7<=3; local7 += 1) {
+for (int local8 = 0; local8<=1; local8 += 1) {
+Test5Lib.local4.field3=Test5Lib.local2.field2;
 }
 }
-for (int local7 = 0; local7<=1; local7 += 1) {
-Test5Lib.local3.method2(Test5Lib.local2,Test5Lib.local4.field3,3);
 }
-Test5Lib.local4.field3=Test5Lib.local3.field3;
+if (inputValue<=4) {
+for (int local9 = 0; local9<=2; local9 += 1) {
+Test5Lib.local3.field1.method2(Test5Lib.local4.field1,Test5Lib.local4.field1,3);
+}
+}else {
+for (int local10 = 0; local10<=2; local10 += 1) {
+if (inputValue==4) {
+Test5Lib.local2.field1.method2(Test5Lib.local3.field4,Test5Lib.local3.field4,3);
+}
+}
+}
+for (int local11 = 0; local11<=3; local11 += 1) {
+if (inputValue==3) {
+Test5Lib.local1.field2=Test5Lib.local4.field2.method1(3);
+}
+}
+if (inputValue<=2) {
+Test5Lib.local3.field3=Test5Lib.local3;
+}else {
+if (inputValue==4) {
+for (int local12 = 0; local12<=0; local12 += 1) {
+if (inputValue<3) {
+if (inputValue<1) {
+}else {
+}
+}else {
+if (inputValue<=4) {
+}else {
+}
+}
+}
+}
+}
+if (inputValue<4) {
+if (inputValue>=1) {
+Test5Lib.local2.field1.method2(Test5Lib.local4.field1,Test5Lib.local1.field1,3);
+}
+}
+Test5Lib.local1.field2=Test5Lib.local3;
+Test5Lib.local4.method2(Test5Lib.local3,Test5Lib.local2.field1,3);
 Benchmark.test(1,Test5Lib.local1);
 Benchmark.test(2,Test5Lib.local2);
 Benchmark.test(3,Test5Lib.local3);

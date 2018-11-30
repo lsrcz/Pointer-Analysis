@@ -1,6 +1,7 @@
 package jry.basicfieldCFL;
 
 import jry.evaluation.AbstractPTATransformer;
+import jry.evaluation.LogPTATransformer;
 import jry.util.CFLGraphBuilder;
 import jry.util.CFLLib;
 import jry.util.CallGraphGenerator;
@@ -35,7 +36,7 @@ class AllocRef {
     }
 }
 
-public class BasicFieldCFLTransformer extends AbstractPTATransformer {
+public class BasicFieldCFLTransformer extends LogPTATransformer {
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
     Set<SootMethod> isVisited = new HashSet<SootMethod>();
     Map<Integer, Local> queries = new TreeMap<Integer, Local>();
@@ -204,8 +205,7 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
         }
     }
 
-    @Override
-    protected void internalTransform(String s, Map<String, String> map) {
+    protected void myInternalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
         dfsMethod(mainMethod);
 
@@ -219,6 +219,7 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
             result.put(entry.getKey(), graphBuilder.getPointTo(entry.getValue(), -2));
         }
     }
+
     public static void main(String args[]) {
         BasicFieldCFLTransformer ipat = new BasicFieldCFLTransformer();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));

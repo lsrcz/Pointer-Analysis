@@ -43,7 +43,7 @@ public class InterProcedureAndersonTrans extends AbstractPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.FieldSensitivity";
+        String className = "jry.Test";
 
         soot.Main.main(new String[]{
                 "-w",

@@ -15,12 +15,14 @@ import vasco.soot.examples.SignAnalysis;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.*;
 
 public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> {
     private static final Local RETURN_LOCAL = new JimpleLocal("@return", IntType.v());
 
     public InterProcedureFieldAnderson() {
-        verbose = false;
+        verbose = true;
     }
 
     private Local getLocal(Value value) {
@@ -98,6 +100,15 @@ public class InterProcedureFieldAnderson extends ForwardInterProceduralAnalysis<
                 }
                 output.get(field).union(input.get(rhs));
             }
+        }
+        List<Object> keylist = new ArrayList<>();
+        for (Entry<Object, FlowSet<NewExpr>> p : output.entrySet()) {
+            if (p.getValue().size() == 0) {
+                keylist.add(p.getKey());
+            }
+        }
+        for (Object key : keylist) {
+            output.remove(key);
         }
     }
 

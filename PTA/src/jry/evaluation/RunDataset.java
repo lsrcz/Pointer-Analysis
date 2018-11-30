@@ -15,7 +15,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 public class RunDataset {
-    final int datasetSize = 45;
+    final int datasetSize = 15;
     ArrayList<Class<? extends AbstractPTATransformer>> allTransformer = new ArrayList<>();
 
     public RunDataset(){
@@ -148,7 +148,8 @@ public class RunDataset {
         return resultSize;
     }
 
-    void printResult(int testId, Integer[] numbers) {
+    void printResult(String name, Integer[] numbers) {
+        name = String.format("%3s", name);
         assert numbers.length == allTransformer.size() + 1;
         int id = 0;
         String ans = "";
@@ -157,22 +158,33 @@ public class RunDataset {
             id += 1;
         }
         ans += "AllMerge: " + String.format("%3d", numbers[id]);
-        System.out.println("[Result Of " + testId + "] " + ans);
+        System.out.println("[Result Of " + name + "] " + ans);
+    }
+
+    Integer[] runSingleData(int testId) {
+        System.out.println("[Run TestCase] " + testId) ;
+        Map<Integer, ArraySparseSet<Integer>> groundTruth = getGroundTruth(testId);
+        ArrayList<Map<Integer, ArraySparseSet<Integer>>> results = getResults(testId);
+        return checkValid(groundTruth, results);
     }
 
     public void testAllTransformerWithSingleData(int testId) {
-        for (int i = testId; i <= testId; ++i) {
-            Map<Integer, ArraySparseSet<Integer>> groundTruth = getGroundTruth(i);
-            ArrayList<Map<Integer, ArraySparseSet<Integer>>> results = getResults(i);
-            Integer[] getNumber = checkValid(groundTruth, results);
-            printResult(i, getNumber);
-        }
+        printResult(((Integer)testId).toString(), runSingleData(testId));
     }
 
     public void testAllTransformerWithAllData() {
+        Integer ans[] = new Integer[allTransformer.size() + 1];
+        List<Integer[]> allRes = new ArrayList<>();
+        for (int i = 0; i < ans.length; ++i) ans[i] = 0;
         for (int i = 1; i <= datasetSize; ++i) {
-            System.out.println("[Run TestCase]" + i) ;
-            testAllTransformerWithSingleData(i);
+            Integer[] singleRes = runSingleData(i);
+            for (int j = 0; j < singleRes.length; ++j)
+                ans[j] += singleRes[j];
+            allRes.add(singleRes);
         }
+        for (int i = 1; i <= datasetSize; ++i) {
+            printResult(((Integer)i).toString(), allRes.get(i - 1));
+        }
+        printResult("all", ans);
     }
 }

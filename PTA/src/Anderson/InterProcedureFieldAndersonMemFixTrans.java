@@ -1,23 +1,24 @@
 package Anderson;
 
+import jry.evaluation.AbstractPTATransformer;
 import jry.evaluation.LogPTATransformer;
 import jry.util.ResultOperator;
-import jry.evaluation.AbstractPTATransformer;
-import soot.*;
+import soot.Main;
+import soot.PackManager;
+import soot.Transform;
+import soot.Unit;
 import soot.jimple.NewExpr;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
 import utils.DataFlowSolutionToResultOperator;
 import vasco.DataFlowSolution;
-import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
 import java.util.Map;
-import jry.util.*;
 
-public class InterProcedureAndersonTrans extends LogPTATransformer {
-    private InterProcedureFieldAnderson analysis;
+public class InterProcedureFieldAndersonMemFixTrans extends LogPTATransformer {
+    private InterProcedureFieldAndersonMemFix analysis;
     private DataFlowSolutionToResultOperator solutionToResultOp;
     private Map<Integer, ArraySparseSet<Integer>> result;
 
@@ -28,7 +29,7 @@ public class InterProcedureAndersonTrans extends LogPTATransformer {
     @Override
     protected void myInternalTransform(String s, Map<String, String> map) {
         solutionToResultOp = new DataFlowSolutionToResultOperator();
-        analysis = new InterProcedureFieldAnderson();
+        analysis = new InterProcedureFieldAndersonMemFix();
         analysis.doAnalysis();
         DataFlowSolution<Unit, Map<Object, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
         ResultOperator resultOp = solutionToResultOp.convert(solution);
@@ -37,31 +38,17 @@ public class InterProcedureAndersonTrans extends LogPTATransformer {
     }
 
     public static void main(String args[]) {
-        InterProcedureAndersonTrans ipat = new InterProcedureAndersonTrans();
+        InterProcedureFieldAndersonMemFixTrans ipat = new InterProcedureFieldAndersonMemFixTrans();
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
         String dir = "./resources";
         String classpath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "dataset.Test60";
+        String className = "dataset.Test11";
 
-        soot.Main.main(new String[]{
-                "-W",
-                "-O",
-                "-soot-class-path", classpath,
-                "-main-class", className,
-                "-f", "J",
-                className
-        });
-        soot.G.reset();
-        VascoClearer.clear();
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
-        String optimized = "./sootOutput";
-        classpath = optimized
-                + File.pathSeparator + dir + File.separator + "rt.jar"
-                + File.pathSeparator + dir + File.separator + "jce.jar";
-        soot.Main.main(new String[]{
+        Main.main(new String[]{
                 "-w",
                 "-app", "-pp",
                 "-keep-line-number",
@@ -78,6 +65,5 @@ public class InterProcedureAndersonTrans extends LogPTATransformer {
                 "-f", "J",
                 className
         });
-
     }
 }

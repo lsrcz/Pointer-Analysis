@@ -43,10 +43,7 @@ public class RunDataset {
         return result;
     }
 
-    Map<Integer, ArraySparseSet<Integer>> getResult(Class <? extends AbstractPTATransformer> PTAType, int testId) {
-
-        String dir = "resources";
-        String className = "dataset.Test" + testId;
+    String[] sootInit(String dir, String className) {
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
@@ -65,6 +62,13 @@ public class RunDataset {
         };
         soot.G.reset();
         VascoClearer.clear();
+        return sootArgs;
+    }
+
+    Map<Integer, ArraySparseSet<Integer>> getResult(Class <? extends AbstractPTATransformer> PTAType, int testId) {
+        String dir = "resources";
+        String className = "dataset.Test" + testId;
+        String[] args = sootInit(dir, className);
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
         AbstractPTATransformer transformer = null;
         try {
@@ -75,11 +79,44 @@ public class RunDataset {
             e.printStackTrace();
         }
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", transformer));
-        soot.Main.main(sootArgs);
+        soot.Main.main(args);
         PackManager.v().getPack("wjtp").remove("wjtp.fcpa");
         PackManager.v().getPack("wjtp").remove("wjtp.mypta");
-        System.out.println(transformer.getResult());
         return transformer.getResult();
+    }
+
+    ArrayList<Map<Integer, ArraySparseSet<Integer>>> getResults(int testId) {
+
+        String dir = "resources";
+        String className = "dataset.Test" + testId;
+        String[] args = sootInit(dir, className);
+
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
+        int id = 0;
+        List<AbstractPTATransformer> transformers = new LinkedList<>();
+        for (Class<? extends AbstractPTATransformer> type : allTransformer) {
+            AbstractPTATransformer transformer = null;
+            try {
+                transformer = type.newInstance();
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+            transformers.add(transformer);
+            PackManager.v().getPack("wjtp").add(new Transform("wjtp." + id + type.toString(), transformer));
+            id += 1;
+        }
+        soot.Main.main(args);
+        PackManager.v().getPack("wjtp").remove("wjtp.fcpa");
+        id = 0;
+        ArrayList<Map<Integer, ArraySparseSet<Integer>>> result = new ArrayList<>();
+        for (AbstractPTATransformer transformer : transformers) {
+            result.add(transformer.getResult());
+            PackManager.v().getPack("wjtp").remove("wjtp." + id + transformer.getClass().toString());
+            id += 1;
+        }
+        return result;
     }
 
     void getAllTransformer() {
@@ -126,13 +163,7 @@ public class RunDataset {
     public void testAllTransformerWithSingleData(int testId) {
         for (int i = testId; i <= testId; ++i) {
             Map<Integer, ArraySparseSet<Integer>> groundTruth = getGroundTruth(i);
-            ArrayList<Map<Integer, ArraySparseSet<Integer>>> results = new ArrayList<>();
-            int id = 0;
-            for (Class<? extends AbstractPTATransformer> type : allTransformer) {
-                results.add(getResult(type, i));
-                id += 1;
-                System.out.println("Type" + type);
-            }
+            ArrayList<Map<Integer, ArraySparseSet<Integer>>> results = getResults(i);
             Integer[] getNumber = checkValid(groundTruth, results);
             printResult(i, getNumber);
         }
@@ -140,7 +171,7 @@ public class RunDataset {
 
     public void testAllTransformerWithAllData() {
         for (int i = 1; i <= datasetSize; ++i) {
-            System.out.println("[Run]" + i) ;
+            System.out.println("[Run TestCase]" + i) ;
             testAllTransformerWithSingleData(i);
         }
     }

@@ -4,10 +4,13 @@ import jry.clonefieldCFL.CloneFieldCFLTransformer;
 import jry.evaluation.LogPTATransformer;
 import jry.util.CFLGraphBuilder;
 import jry.util.CFLLib;
+import jry.util.CallGraphGenerator;
 import jry.util.ResultOperator;
 import soot.*;
+import soot.jimple.*;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.util.Chain;
+import soot.util.queue.QueueReader;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
@@ -17,7 +20,8 @@ public class FlowFieldCFLTransformer extends LogPTATransformer {
     Map<Integer, ArraySparseSet<Integer>> result = new TreeMap<>();
     Map<Integer, Local> queries = new TreeMap<>();
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
-    Set<SootField> staticFields = new HashSet<>();
+    Set<SootMethod> isVisit = new HashSet<>();
+    Map<SootMethod, Set<SootField>> staticFields = new HashMap<SootMethod, Set<SootField>>();
 
 
     @Override
@@ -25,8 +29,55 @@ public class FlowFieldCFLTransformer extends LogPTATransformer {
         return result;
     }
 
-    void collectAllStaticField(SootMethod sMethod) {
+    private Object getValue(Value var) {
+        if (var instanceof ArrayRef) {
+            return ((ArrayRef) var).getBase();
+        } else if (var instanceof StaticFieldRef) {
+            return ((StaticFieldRef) var).getField();
+        }
+        return var;
+    }
 
+    void resolveStaticFieldInCall(SootMethod sMethod, InvokeExpr ie) {
+
+    }
+
+    void collectAllStaticField(SootMethod sMethod, Set<SootField> fields) {
+        if (sMethod.hasActiveBody()) {
+            for (Unit unit : sMethod.getActiveBody().getUnits()) {
+                if (unit instanceof InvokeStmt) {
+                    InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
+                    if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
+                        continue;
+                    } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
+                        continue;
+                    } else {
+                        List<SootMethod> nextMethods = CallGraphGenerator.resolveTarget(unit);
+                        for (SootMethod nextMethod : nextMethods) {
+                            resolveStaticFieldInCall(nextMethod, ie);
+                            collectAllStaticField(nextMethod, fields);
+                        }
+                    }
+                } else if (unit instanceof DefinitionStmt) {
+                    Object right = getValue(((DefinitionStmt) unit).getRightOp());
+                    Object left = getValue(((DefinitionStmt) unit).getLeftOp());
+                    if (left instanceof SootField) {
+                        fields.add((SootField)left);
+                    }
+                    if (right instanceof SootField) {
+                        fields.add((SootField)right);
+                    } else if (right instanceof InvokeExpr) {
+                        InvokeExpr ie = (InvokeExpr)right;
+                        List<SootMethod> nextMethods = CallGraphGenerator.resolveTarget(unit);
+                        for (SootMethod nextMethod : nextMethods) {
+                            resolveStaticFieldInCall(nextMethod, ie);
+                            collectAllStaticField(nextMethod, fields);
+                        }
+
+                    }
+                }
+            }
+        }
     }
 
     void dfsMethod(SootMethod sMethod) {
@@ -36,7 +87,18 @@ public class FlowFieldCFLTransformer extends LogPTATransformer {
     @Override
     protected void myInternalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
-        collectAllStaticField(mainMethod);
+
+        // get all static Filed
+        QueueReader<MethodOrMethodContext> allMethods = Scene.v().getReachableMethods().listener();
+        while (allMethods.hasNext()) {
+            SootMethod currentMethod = allMethods.next().method();
+            isVisit.clear();
+            Set<SootField> currentFields = new HashSet<SootField>();
+            collectAllStaticField(currentMethod, currentFields);
+        }
+
+        // build graph
+        isVisit.clear();
         dfsMethod(mainMethod);
 
         graphBuilder.doAnalysis(CFLLib.FieldCFL, CFLLib.FieldCFLName);

@@ -15,6 +15,6 @@ public class Test50 {
         Test50A x = new Test50A();
         Test50A y = new Test50A();
         y.x = x.get();
-        Benchmark.test(1, y.x);
+        Benchmark.test(1, x.x);
     }
 }

@@ -117,16 +117,11 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
 
     }
 
-    void addAssignEdge(Object u, Object v, Unit callPosition) {
-
-    }
-
-    void addAssignEdge(Local u, SootField sField, Object v, Unit callPosition) {
-
-    }
-
-    void addAssignEdge(Object u, Local v, SootField sField, Unit callPosition) {
-
+    void initNode(Object u) {
+        if (assignGraph.containsKey(u)) {
+            return;
+        }
+        assignGraph.put(u, new LinkedList<>());
     }
 
     private List<Local> getReturnObj(SootMethod sMethod) {
@@ -259,5 +254,23 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         List<LocalRef> result = new LinkedList<>();
         dfsFieldTrace(currentClass, depth, result, new LocalRef(local));
         return result;
+    }
+
+    void addAssignEdge(Object u, Object v, Unit callPosition) {
+        initNode(u);
+        initNode(v);
+        assignGraph.get(v).add(new AssignEdge(u, 0, null, callPosition));
+    }
+
+    void addAssignEdge(Local u, SootField sField, Object v, Unit callPosition) {
+        initNode(u);
+        initNode(v);
+        assignGraph.get(v).add(new AssignEdge(v, 1, sField, callPosition));
+    }
+
+    void addAssignEdge(Object u, Local v, SootField sField, Unit callPosition) {
+        initNode(u);
+        initNode(v);
+        assignGraph.get(v).add(new AssignEdge(v, 2, sField, callPosition));
     }
 }

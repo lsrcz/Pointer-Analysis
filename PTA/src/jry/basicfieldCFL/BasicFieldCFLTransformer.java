@@ -89,7 +89,7 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
                         } else if (left instanceof InstanceFieldRef) {
                             Local LeftBase = (Local) (((InstanceFieldRef) left).getBase());
                             graphBuilder.addEdge(base, LeftBase, 4, ((InstanceFieldRef) left).getFieldRef());
-                            graphBuilder.addEdge(LeftBase, base, -5, ((InstanceFieldRef) left).getFieldRef());
+                            graphBuilder.addEdge(LeftBase, base, -5, ((InstanceFieldRef) left).getField());
                         } else {
                             assert false;
                         }
@@ -166,15 +166,15 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
                             graphBuilder.addEdge(left, right, -3, 0);
                         } else if (left instanceof InstanceFieldRef) {
                             Local base = (Local) (((InstanceFieldRef) left).getBase());
-                            graphBuilder.addEdge(right, base, 4, ((InstanceFieldRef) left).getFieldRef());
-                            graphBuilder.addEdge(base, right, -5, ((InstanceFieldRef) left).getFieldRef());
+                            graphBuilder.addEdge(right, base, 4, ((InstanceFieldRef) left).getField());
+                            graphBuilder.addEdge(base, right, -5, ((InstanceFieldRef) left).getField());
                         } else {
                             assert false;
                         }
                     } else if (right instanceof InstanceFieldRef) {
                         Local base = (Local) ((InstanceFieldRef) right).getBase();
-                        graphBuilder.addEdge(base, left, -4, ((InstanceFieldRef) right).getFieldRef());
-                        graphBuilder.addEdge(left, base, 5, ((InstanceFieldRef) right).getFieldRef());
+                        graphBuilder.addEdge(base, left, -4, ((InstanceFieldRef) right).getField());
+                        graphBuilder.addEdge(left, base, 5, ((InstanceFieldRef) right).getField());
                     } else if (right instanceof ParameterRef) {
                     } else if (right instanceof InvokeExpr){
                         InvokeExpr ie = (InvokeExpr)right;
@@ -188,8 +188,8 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
                                     graphBuilder.addEdge(returnObj, left, 3, 0);
                                     graphBuilder.addEdge(left, returnObj, -3, 0);
                                 } else if (left instanceof InstanceFieldRef) {
-                                    graphBuilder.addEdge(left, returnObj, 4, ((InstanceFieldRef) left).getFieldRef());
-                                    graphBuilder.addEdge(returnObj, left, -5, ((InstanceFieldRef) left).getFieldRef());
+                                    graphBuilder.addEdge(left, returnObj, 4, ((InstanceFieldRef) left).getField());
+                                    graphBuilder.addEdge(returnObj, left, -5, ((InstanceFieldRef) left).getField());
                                 }
                             }
                         }

@@ -114,5 +114,9 @@ public class DefaultJimpleRepresentation implements ProgramRepresentation<SootMe
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	public static void clear() {
+		singleton = new DefaultJimpleRepresentation();
+	}
 	
 }

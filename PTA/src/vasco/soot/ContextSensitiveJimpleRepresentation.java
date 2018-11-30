@@ -38,7 +38,7 @@ import vasco.ProgramRepresentation;
  * A program representation for Soot using the Jimple IR with a context-sensitive
  * call graph. This representation uses control-flow graphs of individual units including exceptional 
  * control flow, and resolves virtual calls using the call graph returned by
- * {@link Scene#getContextSensitiveCallGraph() Scene#getContextSensitiveCallGraph}.
+ * {@link soot.Scene#getContextSensitiveCallGraph() Scene#getContextSensitiveCallGraph}.
  *   
  * <p><strong>Note</strong>: This class follows the Singleton pattern. The singleton 
  * object is available through {@link #v()}.</p>
@@ -115,6 +115,10 @@ public class ContextSensitiveJimpleRepresentation implements ProgramRepresentati
 	public boolean isPhantomMethod(MethodOrMethodContext method) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	public static void clear() {
+		singleton = new ContextSensitiveJimpleRepresentation();
 	}
 	
 }

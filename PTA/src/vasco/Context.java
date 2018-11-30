@@ -69,6 +69,13 @@ public class Context<M,N,A> implements soot.Context, Comparable<Context<M,N,A>> 
 	static int totalNodes = 0;
 	static int liveNodes = 0;
 
+	public static void clear() {
+		count = 0;
+		freeContexts = new java.util.HashSet<>();
+		totalNodes = 0;
+		liveNodes = 0;
+	}
+
 	/** Whether or not this context has been fully analysed at least once. */
 	private boolean analysed;
 

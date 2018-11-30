@@ -100,7 +100,7 @@ public abstract class ForwardInterProceduralAnalysis<M,N,A> extends InterProcedu
 				A in = currentContext.getValueBefore(node);
 				
 				if (verbose) {
-					System.out.println("IN = " + in);
+					// System.out.println("IN = " + in);
 					System.err.println(node);
 				}
 				
@@ -124,8 +124,8 @@ public abstract class ForwardInterProceduralAnalysis<M,N,A> extends InterProcedu
 						if (targetContext == null) {
 							targetContext = initContext(targetMethod, entryValue);
 							if (verbose) {
-								System.out.println("[NEW] X" + currentContext + " -> X" + targetContext + " " + targetMethod + " ");
-								System.out.println("ENTRY(X" + targetContext + ") = " + entryValue);
+								// System.out.println("[NEW] X" + currentContext + " -> X" + targetContext + " " + targetMethod + " ");
+								// System.out.println("ENTRY(X" + targetContext + ") = " + entryValue);
 							}
 
 						}
@@ -138,8 +138,8 @@ public abstract class ForwardInterProceduralAnalysis<M,N,A> extends InterProcedu
 							hit = true;
 								A exitValue = targetContext.getExitValue();
 							if (verbose) {
-								System.out.println("[HIT] X" + currentContext + " -> X" + targetContext + " " + targetMethod + " ");
-									System.out.println("EXIT(X" + targetContext + ") = " + exitValue);
+								// System.out.println("[HIT] X" + currentContext + " -> X" + targetContext + " " + targetMethod + " ");
+									// System.out.println("EXIT(X" + targetContext + ") = " + exitValue);
 							}
 							A returnedValue = callExitFlowFunction(currentContext, targetMethod, node, exitValue);
 							out = meet(out, returnedValue);
@@ -164,8 +164,8 @@ public abstract class ForwardInterProceduralAnalysis<M,N,A> extends InterProcedu
 					out = normalFlowFunction(currentContext, node, in);
 				}
 				if (verbose) {
-					System.out.println("OUT = " + out);
-					System.out.println("---------------------------------------");
+					// System.out.println("OUT = " + out);
+					// System.out.println("---------------------------------------");
 				}
 
 

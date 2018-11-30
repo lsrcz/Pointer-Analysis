@@ -132,7 +132,7 @@ public class SignAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Uni
 	}
 	
 	// Private utility method to assign the constant value of the RHS (if any) from the input map to  the LHS in the output map.
-	private void assign(Local lhs, Value rhs, Map<Local, Sign> input, Map<Local, Sign> output) {
+	private void assign(Local lhs, Value rhs, Map<Local, SignAnalysis.Sign> input, Map<Local, SignAnalysis.Sign> output) {
 		// We only care about numeric locals
 		if (lhs.getType() instanceof IntType) {			
 			// First remove casts, if any.
@@ -146,11 +146,11 @@ public class SignAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Uni
 	}
 
 	@Override
-	public Map<Local, Sign> normalFlowFunction(
-			Context<SootMethod, Unit, Map<Local, Sign>> context, Unit unit,
-			Map<Local, Sign> inValue) {
+	public Map<Local, SignAnalysis.Sign> normalFlowFunction(
+			Context<SootMethod, Unit, Map<Local, SignAnalysis.Sign>> context, Unit unit,
+			Map<Local, SignAnalysis.Sign> inValue) {
 		// Initialize result to input
-		Map<Local, Sign> outValue = copy(inValue);
+		Map<Local, SignAnalysis.Sign> outValue = copy(inValue);
 		// Only statements assigning locals matter
 		if (unit instanceof AssignStmt) {
 			// Get operands
@@ -169,11 +169,11 @@ public class SignAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Uni
 	}
 
 	@Override
-	public Map<Local, Sign> callEntryFlowFunction(
-			Context<SootMethod, Unit, Map<Local, Sign>> context, SootMethod calledMethod, Unit unit,
-			Map<Local, Sign> inValue) {
+	public Map<Local, SignAnalysis.Sign> callEntryFlowFunction(
+			Context<SootMethod, Unit, Map<Local, SignAnalysis.Sign>> context, SootMethod calledMethod, Unit unit,
+			Map<Local, SignAnalysis.Sign> inValue) {
 		// Initialise result to empty map
-		Map<Local, Sign> entryValue = topValue();
+		Map<Local, SignAnalysis.Sign> entryValue = topValue();
 		// Map arguments to parameters
 		InvokeExpr ie = ((Stmt) unit).getInvokeExpr();
 		for (int i = 0; i < ie.getArgCount(); i++) {
@@ -192,9 +192,9 @@ public class SignAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Uni
 	}
 	
 	@Override
-	public Map<Local, Sign> callExitFlowFunction(Context<SootMethod, Unit, Map<Local, Sign>> context, SootMethod calledMethod, Unit unit, Map<Local, Sign> exitValue) {
+	public Map<Local, SignAnalysis.Sign> callExitFlowFunction(Context<SootMethod, Unit, Map<Local, SignAnalysis.Sign>> context, SootMethod calledMethod, Unit unit, Map<Local, SignAnalysis.Sign> exitValue) {
 		// Initialise result to an empty value
-		Map<Local, Sign> afterCallValue = topValue();
+		Map<Local, SignAnalysis.Sign> afterCallValue = topValue();
 		// Only propagate signs for return values
 		if (unit instanceof AssignStmt) {
 			Value lhsOp = ((AssignStmt) unit).getLeftOp();
@@ -205,9 +205,9 @@ public class SignAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Uni
 	}
 
 	@Override
-	public Map<Local, Sign> callLocalFlowFunction(Context<SootMethod, Unit, Map<Local, Sign>> context, Unit unit, Map<Local, Sign> inValue) {
+	public Map<Local, SignAnalysis.Sign> callLocalFlowFunction(Context<SootMethod, Unit, Map<Local, SignAnalysis.Sign>> context, Unit unit, Map<Local, SignAnalysis.Sign> inValue) {
 		// Initialise result to the input
-		Map<Local, Sign> afterCallValue = copy(inValue);
+		Map<Local, SignAnalysis.Sign> afterCallValue = copy(inValue);
 		// Remove information for return value (as it's value will flow from the call)
 		if (unit instanceof AssignStmt) {
 			Value lhsOp = ((AssignStmt) unit).getLeftOp();
@@ -219,22 +219,22 @@ public class SignAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Uni
 	}
 	
 	@Override
-	public Map<Local, Sign> boundaryValue(SootMethod method) {
+	public Map<Local, SignAnalysis.Sign> boundaryValue(SootMethod method) {
 		return topValue();
 	}
 
 	@Override
-	public Map<Local, Sign> copy(Map<Local, Sign> src) {
-		return new HashMap<Local, Sign>(src);
+	public Map<Local, SignAnalysis.Sign> copy(Map<Local, SignAnalysis.Sign> src) {
+		return new HashMap<Local, SignAnalysis.Sign>(src);
 	}
 
 
 
 	@Override
-	public Map<Local, Sign> meet(Map<Local, Sign> op1, Map<Local, Sign> op2) {
-		Map<Local, Sign> result;
+	public Map<Local, SignAnalysis.Sign> meet(Map<Local, SignAnalysis.Sign> op1, Map<Local, SignAnalysis.Sign> op2) {
+		Map<Local, SignAnalysis.Sign> result;
 		// First add everything in the first operand
-		result = new HashMap<Local, Sign>(op1);
+		result = new HashMap<Local, SignAnalysis.Sign>(op1);
 		// Then add everything in the second operand, bottoming out the common keys with different values
 		for (Local x : op2.keySet()) {
 			if (op1.containsKey(x)) {
@@ -254,8 +254,8 @@ public class SignAnalysis extends ForwardInterProceduralAnalysis<SootMethod, Uni
 	 * Returns an empty map.
 	 */
 	@Override
-	public Map<Local, Sign> topValue() {
-		return new HashMap<Local, Sign>();
+	public Map<Local, SignAnalysis.Sign> topValue() {
+		return new HashMap<Local, SignAnalysis.Sign>();
 	}
 
 	/**

@@ -4,11 +4,14 @@ import jry.evaluation.AbstractPTATransformer;
 import jry.util.CFLGraphBuilder;
 import jry.util.CFLLib;
 import jry.util.CallGraphGenerator;
+import jry.util.ResultOperator;
 import soot.*;
 import soot.jimple.*;
 import soot.toolkits.scalar.ArraySparseSet;
+import vasco.callgraph.CallGraphTransformer;
 import soot.util.Chain;
 
+import java.io.File;
 import java.util.*;
 
 class AllocRef {
@@ -215,5 +218,36 @@ public class BasicFieldCFLTransformer extends AbstractPTATransformer {
         for (Map.Entry<Integer, Local> entry : queries.entrySet()) {
             result.put(entry.getKey(), graphBuilder.getPointTo(entry.getValue(), -2));
         }
+    }
+    public static void main(String args[]) {
+        BasicFieldCFLTransformer ipat = new BasicFieldCFLTransformer();
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
+        String dir = "./resources";
+        String classpath = dir
+                + File.pathSeparator + dir + File.separator + "rt.jar"
+                + File.pathSeparator + dir + File.separator + "jce.jar";
+        System.out.println(classpath);
+        String className = "test.InterFlowCS";
+
+        soot.Main.main(new String[]{
+                "-w",
+                "-app", "-pp",
+                "-keep-line-number",
+                "-keep-bytecode-offset",
+                "-p", "cg", "implicit-entry:false",
+                "-p", "cg.spark", "enabled",
+                "-p", "cg.spark", "simulate-natives",
+                "-p", "cg", "safe-forname",
+                "-p", "cg", "safe-newinstance",
+                "-p", "wjtp.fcpa", "enabled:true",
+                "-p", "wjtp.ipa", "enabled:true",
+                "-soot-class-path", classpath,
+                "-main-class", className,
+                "-f", "J",
+                className
+        });
+        ResultOperator result = new ResultOperator(ipat.result);
+        System.out.println(result);
     }
 }

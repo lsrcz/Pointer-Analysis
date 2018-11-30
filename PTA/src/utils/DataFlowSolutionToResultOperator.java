@@ -63,4 +63,20 @@ public class DataFlowSolutionToResultOperator {
         }
         return new ResultOperator(set);
     }
+
+    public ResultOperator convertLocal(DataFlowSolution<Unit, Map<Local, FlowSet<NewExpr>>> dfs) {
+        Map<Integer, ArraySparseSet<Integer>> set = new HashMap<>();
+        for (InvokeStmt is: queries.keySet()) {
+            Map<Local, FlowSet<NewExpr>> r = dfs.getValueAfter(is);
+            Pair<Local, Integer> p = queries.get(is);
+            FlowSet<NewExpr> s = r.get(p.getO1());
+            ArraySparseSet<Integer> iset = new ArraySparseSet<>();
+            for (NewExpr expr: s) {
+                iset.add(allocs.get(expr));
+            }
+            set.put(p.getO2(), iset);
+        }
+        return new ResultOperator(set);
+    }
+
 }

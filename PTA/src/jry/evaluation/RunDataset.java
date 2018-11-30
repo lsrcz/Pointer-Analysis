@@ -35,7 +35,7 @@ public class RunDataset {
         Map<Integer, ArraySparseSet<Integer>> result = new HashMap<Integer, ArraySparseSet<Integer>>();
         for (String line : lines) {
             String[] words = line.split(":? ");
-            assert words.length > 1;
+            // assert words.length > 1;
             int queryId = Integer.parseInt(words[0]);
             ArraySparseSet<Integer> currentRes = new ArraySparseSet<>();
             for (int i = 1; i < words.length; ++i) {
@@ -149,9 +149,9 @@ public class RunDataset {
                 if (allMerge == null) allMerge = currentRes.clone();
                 else allMerge.intersection(currentRes, allMerge);
                 resultSize[id] += currentRes.size();
-                mergeSize += allMerge.size();
                 id += 1;
             }
+            mergeSize += allMerge.size();
         }
         resultSize[allResult.size()] = mergeSize;
         return resultSize;

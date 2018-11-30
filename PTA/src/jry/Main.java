@@ -2,6 +2,7 @@ package jry;
 
 import jry.basicfieldCFL.BasicFieldCFLTransformer;
 import jry.clonefieldCFL.CloneFieldCFLTransformer;
+import jry.contextfieldCFL.ContextFieldCFLTransformer;
 import jry.evaluation.AbstractPTATransformer;
 import jry.evaluation.RunDataset;
 import jry.util.ResultOperator;
@@ -17,7 +18,7 @@ public class Main {
 
     public static void main(String[] args) {
         String dir = "resources";
-        String className = "dataset.Test6";
+        String className = "dataset.Test50";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
@@ -34,14 +35,14 @@ public class Main {
         };
         System.out.println(classPath);
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
-        CloneFieldCFLTransformer fCFL = new CloneFieldCFLTransformer();
+        BasicFieldCFLTransformer fCFL = new BasicFieldCFLTransformer();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", fCFL));
         soot.Main.main(sootArgs);
         ResultOperator result = new ResultOperator(fCFL.result);
         System.out.println(result);
 
         /*ArrayList<Class<? extends AbstractPTATransformer>> allList = new ArrayList<>();
-       //allList.add(BasicFieldCFLTransformer.class);
+        //allList.add(BasicFieldCFLTransformer.class);
         allList.add(CloneFieldCFLTransformer.class);
         RunDataset datasetRunner = new RunDataset(allList);
         datasetRunner.testAllTransformerWithAllData();*/

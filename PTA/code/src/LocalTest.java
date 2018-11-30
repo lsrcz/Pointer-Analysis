@@ -1,15 +1,16 @@
 class LocalA {
-    int x = 0;
+    LocalB x;
 }
 
 class LocalB extends LocalA {
+    LocalA y;
 }
 
 public class LocalTest {
     public static void main(String[] args) {
-        LocalB k1 = new LocalB();
-        LocalA k2 = k1;
-        k1.x = 1;
-        k2.x = 2;
+        LocalA x[][] = new LocalA[1000][110];
+        LocalA y = x[1][1];
+        LocalA k = new LocalA();
+        LocalB k2 = new LocalB();
     }
 }

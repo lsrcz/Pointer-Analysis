@@ -109,7 +109,7 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);
-            // System.out.println(sMethod.getActiveBody());
+            System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 // System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
@@ -131,10 +131,11 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                         }
                     }
                 } else if (unit instanceof DefinitionStmt) {
-                    // System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
+                    System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
                     Object right = getValue(((DefinitionStmt) unit).getRightOp());
-                    // System.out.println(right.getClass() + " " + right);
+                    System.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
+                    System.out.println(left.getClass() + " " + left);
                     if (right instanceof NewExpr) {
                         graphBuilder.addEdge(allocRef, left, 1, 0);
                         graphBuilder.addEdge(left, allocRef, -1, 0);
@@ -166,13 +167,14 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                                     graphBuilder.addEdge(returnObj, left, 3, 0);
                                     graphBuilder.addEdge(left, returnObj, -3, 0);
                                 } else if (left instanceof InstanceFieldRef) {
-                                    graphBuilder.addEdge(left, returnObj, 4, ((InstanceFieldRef) left).getField());
-                                    graphBuilder.addEdge(returnObj, left, -5, ((InstanceFieldRef) left).getField());
+                                    graphBuilder.addEdge(((InstanceFieldRef) left).getBase(), returnObj, 4, ((InstanceFieldRef) left).getField());
+                                    graphBuilder.addEdge(returnObj, ((InstanceFieldRef) left).getBase(), -5, ((InstanceFieldRef) left).getField());
                                 }
                             }
                         }
                     } else if (right instanceof Constant) {
                     } else if (right instanceof ThisRef || right instanceof BinopExpr || right instanceof UnopExpr) {
+                    } else if (right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
                     } else assert false;
                 } else assert CallGraphGenerator.resolveTarget(unit).isEmpty();
             }

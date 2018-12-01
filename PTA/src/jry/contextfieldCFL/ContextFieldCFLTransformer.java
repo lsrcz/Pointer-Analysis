@@ -70,6 +70,11 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         public AssignEdge(Object _local, int _type, SootField _sField, Unit _callPosition, int _callType) {
             v = _local; type = _type; sField = _sField; callPosition = _callPosition; callType = _callType;
         }
+
+        @Override
+        public String toString() {
+            return "edge(" + v + " " + type + " " + sField + ")";
+        }
     }
 
     Map<Object, LinkedList<AssignEdge>> assignGraph = new HashMap<>();
@@ -100,6 +105,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     void tryInsertNewLocalRef(LocalRef localRef) {
         Object root = localRef.root;
         if (usedLocalRef.get(root).contains(localRef)) return;
+        System.out.println("[LocalRef] " + localRef);
         usedLocalRef.get(root).add(localRef);
         localRefQueue.add(localRef);
     }
@@ -115,7 +121,6 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     void buildGraph() {
         assert usedLocalRef.size() == assignGraph.size();
         for (Map.Entry<Object, LinkedList<AssignEdge>> entry : assignGraph.entrySet()) {
-            // System.out.println("[BuildGraph] " + entry.getKey() + " " + entry.getValue().size());
             for (LocalRef localRef : usedLocalRef.get(entry.getKey())) {
                 addinGraph(localRef, localRef, null, 0);
             }
@@ -124,6 +129,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                 Object v = edge.v;
                 Set<LocalRef> uLocalRef = usedLocalRef.get(u);
                 Set<LocalRef> vLocalRef = usedLocalRef.get(v);
+                //System.out.println("[BuildGraph] " + entry.getKey() + " " + edge);
                 if (edge.type == 0) {
                     // v = u
                     for (LocalRef localRef : uLocalRef) {
@@ -131,6 +137,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                         assert vLocalRef.contains(localRefLeft);
                         // System.out.println(localRefLeft + " -> " + localRef);
                         addinGraph(localRefLeft, localRef, edge.callPosition, edge.callType);
+                        addinGraph(localRef, localRefLeft, edge.callPosition, edge.callType);
                     }
                 } else if (edge.type == 1){
                     //v.x = u
@@ -215,7 +222,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
 
     void initNode(Object u) {
         if (!assignGraph.containsKey(u)) {
-            // System.out.println("[InitNode] " + u);
+           // System.out.println("[InitNode] " + u);
             assignGraph.put(u, new LinkedList<>());
         }
         if (!usedLocalRef.containsKey(u)) {
@@ -242,8 +249,8 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         if (isVisit.contains(sMethod)) return;
         isVisit.add(sMethod);
         Set<SootMethod> callMethods = new HashSet<>();
-        //System.out.println("[NewMethod] " + sMethod);
-        //System.out.println(sMethod.getActiveBody());
+        System.out.println("[NewMethod] " + sMethod);
+        System.out.println(sMethod.getActiveBody());
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);

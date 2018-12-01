@@ -29,7 +29,7 @@ public class CFLReachbilitySolver {
     }
 
     public void tryExtend(CFLGraph.GraphEdge edge) {
-        //System.out.println("[NewEdge] " + edge.u.id + "->" + edge.v.id + " " + names.get(edge.type) + " " + edge.value);
+        // System.out.println("[NewEdge] " + edge.u.id + "->" + edge.v.id + " " + names.get(edge.type) + " " + edge.value);
         List<CFLGraph.GraphEdge> newEdges = new LinkedList<>();
         for (Rule rootRule: rules) {
             if (rootRule instanceof BasicRule) {

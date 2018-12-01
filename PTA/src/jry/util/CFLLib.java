@@ -45,7 +45,7 @@ public class CFLLib {
 
     public static List<Rule> ContextCFL = new ArrayList<>(Arrays.asList(
             new BasicRule(0, 0, 0),
-            new SpecialRule(0, 0, 1)
+            new SpecialRule(0, 0, -1)
     ));
 
     public static HashMap<Integer, String> ContextCFLName = new HashMap<Integer, String>() {{

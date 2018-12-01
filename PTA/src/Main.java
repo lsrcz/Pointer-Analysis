@@ -5,6 +5,7 @@ import java.util.concurrent.*;
 import Anderson.InterProcedureFieldAndersonMemFixTrans;
 import jry.evaluation.AbstractPTATransformer;
 import jry.util.ResultOperator;
+import basic.BasicProgramTransformer;
 
 import soot.PackManager;
 import soot.Transform;
@@ -13,8 +14,8 @@ import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
 
 public class Main {
-    static AbstractPTATransformer trans[] = {new InterProcedureFieldAndersonMemFixTrans()};
-    static ExecutorService executor = Executors.newFixedThreadPool(4);
+    static AbstractPTATransformer trans[] = {new BasicProgramTransformer(), new InterProcedureFieldAndersonMemFixTrans()};
+    //static ExecutorService executor = Executors.newFixedThreadPool(4);
     static String dir, className;
 
     static void printAnswer(String answer) {
@@ -47,6 +48,7 @@ public class Main {
         VascoClearer.clear();
     }
 
+    /*
     static Future<Map<Integer, ArraySparseSet<Integer>>> getFuture(int i) {
         Future<Map<Integer, ArraySparseSet<Integer>>> future = executor.submit(new Callable<Map<Integer, ArraySparseSet<Integer>>>() {
             public Map<Integer, ArraySparseSet<Integer>> call() throws Exception {
@@ -79,13 +81,55 @@ public class Main {
         });
         return future;
     }
+    */
+
+    static Map<Integer, ArraySparseSet<Integer>> runTransformer(int i) {
+        AbstractPTATransformer ipat = trans[i];
+        String optimized = "./sootOutput";
+        String classpath = optimized
+                + File.pathSeparator + dir + File.separator + "rt.jar"
+                + File.pathSeparator + dir + File.separator + "jce.jar";
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
+        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
+        soot.Main.main(new String[]{
+                "-w",
+                "-app", "-pp",
+                "-keep-line-number",
+                "-keep-bytecode-offset",
+                "-p", "cg", "implicit-entry:false",
+                "-p", "cg.spark", "enabled",
+                "-p", "cg.spark", "simulate-natives",
+                "-p", "cg", "safe-forname",
+                "-p", "cg", "safe-newinstance",
+                "-p", "wjtp.fcpa", "enabled:true",
+                "-p", "wjtp.ipa", "enabled:true",
+                "-soot-class-path", classpath,
+                "-main-class", className,
+                "-f", "J",
+                className
+        });
+        soot.G.reset();
+        VascoClearer.clear();
+        return ipat.getResult();
+    }
 
     public static void main(String[] args) {
         //dir = args[0];
         dir = "./resources";
         //className = args[1];
         className = "dataset.Test60";
+        ResultOperator resultOp = null;
         optimizeProgram(args);
+        for (int i = 0; i < trans.length; i++) {
+            Map<Integer, ArraySparseSet<Integer>> x = runTransformer(i);
+            if (resultOp == null) {
+                resultOp = new ResultOperator(x);
+            } else {
+                resultOp.Intersect(x);
+            }
+            printAnswer(resultOp.toString());
+        }
+        /*
         ArrayList<Future<Map<Integer, ArraySparseSet<Integer>>>> futures = new ArrayList<>();
         for (int i = 0; i < trans.length; i++) {
             futures.add(getFuture(i));
@@ -126,5 +170,6 @@ public class Main {
             }
         }
         executor.shutdown();
+        */
     }
 }

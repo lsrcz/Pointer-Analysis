@@ -45,11 +45,15 @@ public class CFLLib {
 
     public static List<Rule> ContextCFL = new ArrayList<>(Arrays.asList(
             new BasicRule(0, 0, 0),
-            new SpecialRule(0, 0, -1)
+            new SpecialRule(0, 0, -1),
+            new BasicRule(2, 0, 2),
+            new BasicRule(2, 2, 0),
+            new BasicRule(2, 1, 2),
+            new BasicRule(2, 2, -1)
     ));
 
     public static HashMap<Integer, String> ContextCFLName = new HashMap<Integer, String>() {{
-        put(0, "assign"); put(1, "call"); put(-1, "return");
+        put(0, "assign"); put(1, "call"); put(-1, "return"); put(2, "finalres");
     }};
 
 }

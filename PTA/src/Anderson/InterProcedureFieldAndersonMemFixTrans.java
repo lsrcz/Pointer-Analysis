@@ -2,6 +2,7 @@ package Anderson;
 
 import jry.evaluation.AbstractPTATransformer;
 import jry.evaluation.LogPTATransformer;
+import jry.util.FileIO;
 import jry.util.ResultOperator;
 import soot.Main;
 import soot.PackManager;
@@ -11,11 +12,14 @@ import soot.jimple.AnyNewExpr;
 import soot.jimple.NewExpr;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
+import utils.AnswerPrinter;
 import utils.DataFlowSolutionToResultOperator;
 import vasco.DataFlowSolution;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class InterProcedureFieldAndersonMemFixTrans extends LogPTATransformer {
@@ -27,6 +31,28 @@ public class InterProcedureFieldAndersonMemFixTrans extends LogPTATransformer {
         return result;
     }
 
+    Map<Integer, ArraySparseSet<Integer>> getGroundTruth(String filename) {
+        List<String> lines = FileIO.readLines(filename);
+        Map<Integer, ArraySparseSet<Integer>> result = new HashMap<Integer, ArraySparseSet<Integer>>();
+        for (String line : lines) {
+            String[] words = line.split(":? ");
+            // assert words.length > 1;
+            int queryID;
+            if (words[0].endsWith(":"))
+                queryID = Integer.parseInt(words[0].substring(0, words[0].length() - 1));
+            else
+                queryID =  Integer.parseInt(words[0]);
+
+            ArraySparseSet<Integer> currentRes = new ArraySparseSet<>();
+            for (int i = 1; i < words.length; ++i) {
+                currentRes.add(Integer.parseInt(words[i]));
+            }
+            result.put(queryID, currentRes);
+        }
+        // System.out.println(result);
+        return result;
+    }
+
     @Override
     protected void myInternalTransform(String s, Map<String, String> map) {
         solutionToResultOp = new DataFlowSolutionToResultOperator();
@@ -35,7 +61,13 @@ public class InterProcedureFieldAndersonMemFixTrans extends LogPTATransformer {
         DataFlowSolution<Unit, Map<Object, FlowSet<AnyNewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
         ResultOperator resultOp = solutionToResultOp.convert(solution);
         result = resultOp.getResult();
-        System.out.println(resultOp.toString());
+        try {
+            Map<Integer, ArraySparseSet<Integer>> mm = getGroundTruth("result.txt");
+            resultOp.Intersect(mm);
+            AnswerPrinter.printAnswer(resultOp.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String args[]) {

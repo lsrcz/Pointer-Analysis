@@ -47,6 +47,6 @@ public class Main {
         allList.add(BasicProgramTransformer.class);
         allList.add(ContextFieldCFLTransformer.class);
         RunDataset datasetRunner = new RunDataset(allList);
-        datasetRunner.testAllTransformerWithAllData(12, 58);
+        datasetRunner.testAllTransformerWithAllData(1, 58);
     }
 }

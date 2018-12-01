@@ -49,7 +49,8 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
             } else if (rhs instanceof Local) {
                 Local r = getLocal(rhs);
                 output.get(lhs).clear();
-                output.get(lhs).union(input.get(r));
+                if (input.containsKey(r))
+                    output.get(lhs).union(input.get(r));
             } else if (rhs instanceof InstanceFieldRef) {
                 output.get(lhs).clear();
                 Value base = ((InstanceFieldRef)rhs).getBase();
@@ -88,30 +89,34 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
                     Value base = ((InstanceFieldRef) lhs).getBase();
                     SootField field = ((InstanceFieldRef) lhs).getField();
                     if (base instanceof Local) {
-                        Local x = getLocal(base);
-                        int s = input.get(base).size();
-                        for (NewExpr expr : input.get(base)) {
-                            Pair<NewExpr, SootField> p = new Pair<>(expr, field);
-                            if (!input.containsKey(p)) {
-                                output.put(p, new ArraySparseSet<>());
+                        Local x = getLocal(base);////?
+                        if (input.containsKey(base)) {
+                            int s = input.get(base).size();
+                            for (NewExpr expr : input.get(base)) {
+                                Pair<NewExpr, SootField> p = new Pair<>(expr, field);
+                                if (!input.containsKey(p)) {
+                                    output.put(p, new ArraySparseSet<>());
+                                }
+                                if (s == 1) {
+                                    output.get(p).clear();
+                                }
+                                output.get(p).union(input.get(rhs));
                             }
-                            if (s == 1) {
-                                output.get(p).clear();
-                            }
-                            output.get(p).union(input.get(rhs));
                         }
                     }
                 }
             }
         } else if (lhs instanceof StaticFieldRef) {
             if (rhs instanceof Local) {
-                SootField field = ((StaticFieldRef)lhs).getField();
+                SootField field = ((StaticFieldRef) lhs).getField();
                 if (!output.containsKey(field)) {
                     output.put(field, new ArraySparseSet<>());
                 } else {
                     output.get(field).clear();
                 }
-                output.get(field).union(input.get(rhs));
+                if (input.containsKey(rhs)) {
+                    output.get(field).union(input.get(rhs));
+                }
             }
         }
         List<Object> keylist = new ArrayList<>();
@@ -288,6 +293,9 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
             Value arg = ie.getArg(i);
             Local param = sootMethod.getActiveBody().getParameterLocal(i);
             assign(param, arg, localFlowSetMap, entryValue);
+        }
+        if (ie instanceof VirtualInvokeExpr) {
+            int i = 0;
         }
         if (ie instanceof InstanceInvokeExpr) {
             Value instance = ((InstanceInvokeExpr)ie).getBase();

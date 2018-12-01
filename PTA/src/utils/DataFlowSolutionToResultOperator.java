@@ -55,11 +55,15 @@ public class DataFlowSolutionToResultOperator {
             Map<Object, FlowSet<NewExpr>> r = dfs.getValueAfter(is);
             Pair<Local, Integer> p = queries.get(is);
             FlowSet<NewExpr> s = r.get(p.getO1());
-            ArraySparseSet<Integer> iset = new ArraySparseSet<>();
-            for (NewExpr expr: s) {
-                iset.add(allocs.get(expr));
+            if (s == null) {
+                set.put(p.getO2(), new ArraySparseSet<>());
+            } else {
+                ArraySparseSet<Integer> iset = new ArraySparseSet<>();
+                for (NewExpr expr : s) {
+                    iset.add(allocs.get(expr));
+                }
+                set.put(p.getO2(), iset);
             }
-            set.put(p.getO2(), iset);
         }
         return new ResultOperator(set);
     }

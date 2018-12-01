@@ -1,13 +1,17 @@
 package jry.evaluation;
 
+import Anderson.InterProcedureAnderson;
+import Anderson.InterProcedureAndersonTrans;
+import Anderson.InterProcedureFieldAndersonMemFix;
+import Anderson.InterProcedureFieldAndersonMemFixTrans;
 import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import jry.basicfieldCFL.BasicFieldCFLTransformer;
+import jry.clonefieldCFL.CloneFieldCFLTransformer;
 import jry.util.FileIO;
 import jry.util.ResultOperator;
 import soot.PackManager;
 import soot.Transform;
 import soot.toolkits.scalar.ArraySparseSet;
-import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
@@ -15,7 +19,7 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 public class RunDataset {
-    final int datasetSize = 30;
+    final int datasetSize = 49;
     ArrayList<Class<? extends AbstractPTATransformer>> allTransformer = new ArrayList<>();
 
     public RunDataset(){
@@ -48,7 +52,8 @@ public class RunDataset {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         String[] sootArgs = {
-                "-cp", classPath, "-pp",
+                "-w",
+                "-cp", classPath,
                 "-w", "-app",
                 "-keep-line-number",
                 "-keep-bytecode-offset",
@@ -58,10 +63,9 @@ public class RunDataset {
                 "-p", "cg", "safe-forname",
                 "-p", "cg", "safe-newinstance",
                 "-main-class", className,
-                "-f", "none", className
+                "-f", "J", className
         };
         soot.G.reset();
-        VascoClearer.clear();
         return sootArgs;
     }
 
@@ -120,7 +124,7 @@ public class RunDataset {
     }
 
     void getAllTransformer() {
-        allTransformer.add(BasicFieldCFLTransformer.class);
+        allTransformer.add(InterProcedureAndersonTrans.class);
     }
 
     Integer[] checkValid(Map<Integer, ArraySparseSet<Integer>> groudTruth, ArrayList<Map<Integer, ArraySparseSet<Integer>>> allResult) {
@@ -135,6 +139,11 @@ public class RunDataset {
                 ArraySparseSet currentRes = result.get(entry.getKey());
                 // System.out.println(entry.getValue() + " " + currentRes);
                 for (Integer allocId : entry.getValue()) {
+                    if (!currentRes.contains(allocId)) {
+                        System.err.println("Error!");
+                        System.err.println("\n\n\n\n\n\n\n\n\n");
+                        // System.exit(-1);
+                    }
                     assert currentRes.contains(allocId);
                 }
                 if (allMerge == null) allMerge = currentRes.clone();
@@ -176,15 +185,29 @@ public class RunDataset {
         Integer ans[] = new Integer[allTransformer.size() + 1];
         List<Integer[]> allRes = new ArrayList<>();
         for (int i = 0; i < ans.length; ++i) ans[i] = 0;
-        for (int i = 1; i <= datasetSize; ++i) {
+        int begin = 49;
+        for (int i = 1; i < begin; ++i) {
+            allRes.add(new Integer[1]);
+        }
+        for (int i = begin; i <= datasetSize; ++i) {
             Integer[] singleRes = runSingleData(i);
             for (int j = 0; j < singleRes.length; ++j)
                 ans[j] += singleRes[j];
             allRes.add(singleRes);
         }
-        for (int i = 1; i <= datasetSize; ++i) {
+        for (int i = begin; i <= datasetSize; ++i) {
             printResult(((Integer)i).toString(), allRes.get(i - 1));
         }
         printResult("all", ans);
     }
+
+    public static void main(String[] args) {
+        ArrayList<Class<? extends AbstractPTATransformer>> allList = new ArrayList<>();
+        //allList.add(BasicFieldCFLTransformer.class);
+        allList.add(CloneFieldCFLTransformer.class);
+        allList.add(InterProcedureFieldAndersonMemFixTrans.class);
+        RunDataset datasetRunner = new RunDataset(allList);
+        datasetRunner.testAllTransformerWithAllData();
+    }
 }
+// 21 26

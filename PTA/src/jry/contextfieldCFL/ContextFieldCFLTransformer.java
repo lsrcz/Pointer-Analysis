@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 class LocalRef{
-    public List<SootField> trace;
+    public Object trace;
     public Local root;
 
     @Override
@@ -35,44 +35,28 @@ class LocalRef{
 
     public LocalRef(Local _root) {
         root = _root;
-        trace = new LinkedList<SootField>();
+        trace = -1;
     }
 
-    public LocalRef(Local _root, List<SootField> _trace) {
+    public LocalRef(Local _root, SootField _trace) {
         root = _root;
         trace = _trace;
     }
 
-    public LocalRef extend(List<SootField> newTrace, int depth) {
-        List<SootField> ansTrace = new LinkedList<>();
-        for (SootField sField : trace) {
-            ansTrace.add(sField);
-        }
-        for (SootField sField : newTrace) {
-            if (ansTrace.size() == depth) {
-                break;
-            }
-            ansTrace.add(sField);
-        }
-        return new LocalRef(root, ansTrace);
-    }
-
     public LocalRef add(SootField currentField) {
-        List<SootField> ansTrace = new LinkedList<>();
-        for (SootField sField : trace) {
-            ansTrace.add(sField);
-        }
-        ansTrace.add(currentField);
-        return new LocalRef(root, ansTrace);
+        if (trace instanceof SootField)
+            return new LocalRef(root, (SootField)trace);
+        else return new LocalRef(root, currentField);
     }
 }
 
+// Open 1
 public class ContextFieldCFLTransformer extends LogPTATransformer {
     CFLGraphBuilder graphBuilder = new CFLGraphBuilder();
     Set<SootMethod> isVisit = new HashSet<>();
     Map<Integer, Local> queries = new TreeMap<>();
     public Map<Integer, ArraySparseSet<Integer>> result = new TreeMap<>();
-    int depth = 2;
+    int depth = 1;
     int totalNew = 0;
 
     class AssignEdge {
@@ -87,6 +71,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     }
 
     Map<Object, LinkedList<AssignEdge>> assignGraph = new HashMap<>();
+    Map<Object, Set<LocalRef>> usedLocalRef = new HashMap<>();
     Queue<LocalRef> localRefQueue = new LinkedList<>();
 
     public ContextFieldCFLTransformer(int _depth) {
@@ -118,10 +103,12 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     }
 
     void initNode(Object u) {
-        if (assignGraph.containsKey(u)) {
-            return;
+        if (!assignGraph.containsKey(u)) {
+            assignGraph.put(u, new LinkedList<>());
         }
-        assignGraph.put(u, new LinkedList<>());
+        if (!usedLocalRef.containsKey(u)) {
+            usedLocalRef.put(u, new HashSet<>());
+        }
     }
 
     private List<Local> getReturnObj(SootMethod sMethod) {
@@ -143,7 +130,6 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
-                // System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
@@ -166,10 +152,15 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                     Object right = getValue(((DefinitionStmt) unit).getRightOp());
                     // System.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
-                    if (right instanceof NewExpr) {
+                    if (right instanceof NewExpr || right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
                         addAssignEdge(left, allocRef, null);
+                        if (right instanceof NewExpr) {
+                            SootClass baseClass = ((NewExpr) right).getBaseType().getSootClass();
+                            List<LocalRef> localRefs = openNew((Local)left, baseClass);
+                            localRefQueue.addAll(localRefs);
+                            usedLocalRef.get(allocRef).addAll(localRefs);
+                        }
                         allocRef = new AllocRef(0);
-                        
                     } else if (right instanceof Local) {
                         if (left instanceof Local) {
                             addAssignEdge(left, right, null);
@@ -200,7 +191,6 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                         }
                     } else if (right instanceof Constant) {
                     } else if (right instanceof ThisRef || right instanceof BinopExpr || right instanceof UnopExpr) {
-                    } else if (right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
                     } else assert false;
                 } else assert CallGraphGenerator.resolveTarget(unit).isEmpty();
             }
@@ -210,51 +200,23 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         }
     }
 
-    boolean checkValid(Type type) {
-        while (type instanceof ArrayType && !Scene.v().containsClass(type.toString())) {
-            // System.out.println(type);
-            type = ((ArrayType) type).baseType;
-        }
-        return Scene.v().containsClass(type.toString());
-    }
-
-    SootClass getClassByType(Type type) {
-        while (type instanceof ArrayType && !Scene.v().containsClass(type.toString())) {
-            // System.out.println("getClass " + type);
-            type = ((ArrayType) type).baseType;
-        }
-        return Scene.v().getSootClass(type.toString());
-    }
-
-    List<SootField> getAllValidFields(SootClass sClass) {
-        List<SootField> allField = new LinkedList<>();
-        SootClass pre = sClass;
+    List<SootField> getAllFields(SootClass sClass) {
+        List<SootField> result = new LinkedList<>();
         while (true) {
-            for (SootField sField : sClass.getFields()) {
-                if (checkValid(sField.getType())) {
-                    allField.add(sField);
-                }
-            }
-            if (!sClass.hasSuperclass()) break;
-            sClass = sClass.getSuperclass();
+            result.addAll(sClass.getFields());
+            if (sClass.hasSuperclass()) {
+                sClass = sClass.getSuperclass();
+            } else break;
         }
-        // System.out.println("allField " + pre + " " + allField);
-        return allField;
+        return result;
     }
 
-    void dfsFieldTrace(SootClass sClass, int remainDepth, List<LocalRef> ans, LocalRef current) {
-        // System.out.println("fa " + sClass + " " + remainDepth + " " + current);
-        ans.add(current);
-        if (remainDepth == 0) return;
-        for (SootField sField : getAllValidFields(sClass)) {
-            dfsFieldTrace(getClassByType(sField.getType()), remainDepth - 1, ans, current.add(sField));
-        }
-    }
-
-    List<LocalRef> openLocal(Local local, int depth) {
-        SootClass currentClass = getClassByType(local.getType());
+    List<LocalRef> openNew(Local local, SootClass sClass) {
         List<LocalRef> result = new LinkedList<>();
-        dfsFieldTrace(currentClass, depth, result, new LocalRef(local));
+        LocalRef base = new LocalRef(local);
+        for (SootField sField : getAllFields(sClass)) {
+            result.add(base.add(sField));
+        }
         return result;
     }
 

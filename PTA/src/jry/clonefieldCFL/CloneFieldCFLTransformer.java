@@ -200,9 +200,6 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
                         allocId = ((IntConstant) ie.getArgs().get(0)).value;
-                        totalNew += 1;
-                        allocRef = new AllocRef(totalNew);
-                        graphBuilder.assignAllocId(allocRef, allocId);
                     } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
                         Local var = (Local) ie.getArgs().get(1);
                         int id = ((IntConstant) ie.getArgs().get(0)).value;
@@ -239,10 +236,13 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                     if (right instanceof NewExpr) {
                         //System.out.println("-----");
                         //System.out.println(leftm);
+                        totalNew += 1;
+                        allocRef = new AllocRef(totalNew);
+                        graphBuilder.assignAllocId(allocRef, allocId);
                         nodeList.add(leftm);
                         graphBuilder.addEdge(allocRef, leftm, 1, 0);
                         graphBuilder.addEdge(leftm, allocRef, -1, 0);
-                        allocRef = new AllocRef(0);
+                        allocId = 0;
                     } else if ((right instanceof Local) || (right instanceof SootFieldRef)) {
                         if ((left instanceof Local) || (left instanceof SootFieldRef)) {
                             /*System.out.println("-----");

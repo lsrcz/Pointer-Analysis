@@ -233,7 +233,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                             rightm = new SootObjectWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
                         }
                     }
-                    if (right instanceof NewExpr) {
+                    if (right instanceof NewExpr || right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
                         //System.out.println("-----");
                         //System.out.println(leftm);
                         totalNew += 1;
@@ -328,6 +328,8 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
         callStack.addFirst(new Pair<>(mainMethod, -1));
         dfsMethod(mainMethod);
         callStack.removeFirst();
+        graphBuilder.addAllSelf(3);
+        graphBuilder.addAllSelf(-3);
         graphBuilder.doAnalysis(CFLLib.FieldCFL, CFLLib.FieldCFLName);
         for (Map.Entry<Integer, Local> entry : queries.entrySet()) {
             List<SootObjectWithCallsite> entries = nodeList.stream().filter(n -> n.u.equals(entry.getValue())).collect(Collectors.toList());

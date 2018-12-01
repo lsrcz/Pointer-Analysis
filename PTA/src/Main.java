@@ -121,13 +121,17 @@ public class Main {
         ResultOperator resultOp = null;
         optimizeProgram(args);
         for (int i = 0; i < trans.length; i++) {
-            Map<Integer, ArraySparseSet<Integer>> x = runTransformer(i);
-            if (resultOp == null) {
-                resultOp = new ResultOperator(x);
-            } else {
-                resultOp.Intersect(x);
+            try {
+                Map<Integer, ArraySparseSet<Integer>> x = runTransformer(i);
+                if (resultOp == null) {
+                    resultOp = new ResultOperator(x);
+                } else {
+                    resultOp.Intersect(x);
+                }
+                printAnswer(resultOp.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            printAnswer(resultOp.toString());
         }
         /*
         ArrayList<Future<Map<Integer, ArraySparseSet<Integer>>>> futures = new ArrayList<>();

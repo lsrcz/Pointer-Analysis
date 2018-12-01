@@ -66,9 +66,10 @@ public class CodeGenerator {
     int maxMethodBody = 0;
     int localId = 0;
     int mainLines = 0;
+    int openLevel = 0;
     String mainClass = "";
 
-    public CodeGenerator(int classNum, int maxFields, int maxMethods, int _maxMethodBody, String _mainClass, Integer libNum, Integer _mainLines) {
+    public CodeGenerator(int classNum, int maxFields, int maxMethods, int _maxMethodBody, String _mainClass, Integer libNum, Integer _mainLines, Integer _openLevel) {
         mainClass = _mainClass;
         maxMethodBody = _maxMethodBody;
         mainLines = _mainLines;
@@ -80,6 +81,7 @@ public class CodeGenerator {
                 varLib.add(new VarRef(i, getLocalName(localId)));
             }
         }
+        openLevel = _openLevel;
     }
 
     String printClass(MyClass currentClass) {
@@ -173,7 +175,7 @@ public class CodeGenerator {
             int methodNum = rand.nextInt(maxMethods) + 1;
             for (int j = 1; j <= fieldNum; ++j) {
                 totalFields += 1;
-                MyField currentField = new MyField(totalFields, rand.nextInt(classNum) + 1, rand.nextInt(2) == 0);
+                MyField currentField = new MyField(totalFields, rand.nextInt(classNum) + 1, false);
                 newClass.fields.add(currentField);
                 newClass.myFields.add(currentField);
             }
@@ -342,11 +344,11 @@ public class CodeGenerator {
                     case ASSIGN:
                         int classId = rand.nextInt(totalClasses) + 1;
                         List<String> leftName = new LinkedList<>();
-                        getAllVars("", classId, 1, vars, leftName, InhLevel.EQUAL);
+                        getAllVars("", classId, openLevel, vars, leftName, InhLevel.EQUAL);
                         leftName = removeThis(leftName);
                         if (leftName.isEmpty()) break;
                         List<String> rightName = new LinkedList<>();
-                        getAllVars("", classId, 1, vars, rightName, InhLevel.SON);
+                        getAllVars("", classId, openLevel, vars, rightName, InhLevel.SON);
                         assert !rightName.isEmpty();
                         int lpos = rand.nextInt(leftName.size());
                         int rpos = rand.nextInt(rightName.size());
@@ -357,7 +359,7 @@ public class CodeGenerator {
                         if (allMethods.isEmpty()) break;
                         MethodRef currentMethod = allMethods.get(rand.nextInt(allMethods.size()));
                         List<String> callers = new LinkedList<>();
-                        getAllVars("", currentMethod.classId, 1, vars, callers, InhLevel.SON);
+                        getAllVars("", currentMethod.classId, openLevel, vars, callers, InhLevel.SON);
                         if (callers.isEmpty())  break;
                         String caller = callers.get(rand.nextInt(callers.size()));
                         String args = "";
@@ -365,7 +367,7 @@ public class CodeGenerator {
                         boolean getArgs = true;
                         for (Integer argClass : method.args) {
                             List<String> candidateArg = new LinkedList<>();
-                            getAllVars("", argClass, 1, vars, candidateArg, InhLevel.SON);
+                            getAllVars("", argClass, openLevel, vars, candidateArg, InhLevel.SON);
                             if (candidateArg.isEmpty()) {
                                 getArgs = false;
                                 break;
@@ -377,7 +379,7 @@ public class CodeGenerator {
                         line = caller + "." + getMethodName(method.id) + "(" + args + ");\n";
                         if (method.returnType != -1) {
                             List<String> candidateReceiver = new LinkedList<>();
-                            getAllVars("", method.returnType, 1, vars, candidateReceiver, InhLevel.SUPER);
+                            getAllVars("", method.returnType, openLevel, vars, candidateReceiver, InhLevel.SUPER);
                             candidateReceiver = removeThis(candidateReceiver);
                             if (candidateReceiver.size() > 0 && rand.nextInt(3) > 0) {
                                 String receiver = candidateReceiver.get(rand.nextInt(candidateReceiver.size()));
@@ -430,7 +432,7 @@ public class CodeGenerator {
         String body = generateBody(rand.nextInt(maxMethodBody), vars , "depth", "depth-1", 0);
 
         if (currentMethod.returnType != -1) {
-            String returnVar = choose(currentMethod.returnType, vars, 1);
+            String returnVar = choose(currentMethod.returnType, vars, openLevel);
             if (returnVar == null) {
                 body += "return " + chooseLib(currentMethod.returnType) + ";\n";
             } else {

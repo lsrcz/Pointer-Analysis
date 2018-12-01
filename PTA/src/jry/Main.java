@@ -18,7 +18,7 @@ public class Main {
 
     public static void main(String[] args) {
         String dir = "resources";
-        String className = "dataset.Test50";
+        String className = "test.InterFlowCS";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
@@ -35,7 +35,7 @@ public class Main {
         };
         System.out.println(classPath);
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
-        BasicFieldCFLTransformer fCFL = new BasicFieldCFLTransformer();
+        ContextFieldCFLTransformer fCFL = new ContextFieldCFLTransformer();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", fCFL));
         soot.Main.main(sootArgs);
         ResultOperator result = new ResultOperator(fCFL.result);

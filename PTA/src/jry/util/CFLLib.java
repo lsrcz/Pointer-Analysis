@@ -43,4 +43,13 @@ public class CFLLib {
         put(5, "c_get[f]"); put(-5, "c_put[f]");
     }};
 
+    public static List<Rule> ContextCFL = new ArrayList<>(Arrays.asList(
+            new BasicRule(0, 0, 0),
+            new SpecialRule(0, 0, -1)
+    ));
+
+    public static HashMap<Integer, String> ContextCFLName = new HashMap<Integer, String>() {{
+        put(0, "assign"); put(1, "call"); put(-1, "return");
+    }};
+
 }

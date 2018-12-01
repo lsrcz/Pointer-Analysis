@@ -3,15 +3,22 @@ package basic;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
+import soot.toolkits.scalar.ArraySparseSet;
 import soot.util.queue.QueueReader;
 import utils.AnswerPrinter;
+import jry.evaluation.AbstractPTATransformer;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class BasicProgramTransformer extends SceneTransformer {
+public class BasicProgramTransformer extends AbstractPTATransformer {
+    private Map<Integer, ArraySparseSet<Integer>> result = new TreeMap<>();
+    public Map<Integer, ArraySparseSet<Integer>> getResult() {
+        return result;
+    }
+
     @Override
     protected void internalTransform(String s, Map<String, String> map) {
         TreeMap<Integer, Local> queries = new TreeMap<>();
@@ -36,10 +43,20 @@ public class BasicProgramTransformer extends SceneTransformer {
                     }
                     if ((current instanceof DefinitionStmt) && (((DefinitionStmt) current).getRightOp() instanceof NewExpr)) {
                         allocs.add(allocId);
+                        allocId = 0;
                     }
                 }
             }
         }
+
+        for (Map.Entry<Integer, Local> entry : queries.entrySet()) {
+            result.put(entry.getKey(), new ArraySparseSet<>());
+            ArraySparseSet<Integer> set = result.get(entry.getKey());
+            for (Integer x : allocs) {
+                set.add(x);
+            }
+        }
+        /*
         String allAllocs = "";
         Iterator<Integer> iterator = allocs.iterator();
         while (iterator.hasNext()) {
@@ -52,5 +69,6 @@ public class BasicProgramTransformer extends SceneTransformer {
             answer += entry.getKey() + " " + allAllocs + "\n";
         }
         AnswerPrinter.printAnswer(answer);
+        */
     }
 }

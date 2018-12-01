@@ -372,8 +372,8 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                 result.get(entry.getKey()).union(graphBuilder.getPointTo(m, -2));
             }
         }
-        ResultOperator resultOp = new ResultOperator(result);
-        AnswerPrinter.printAnswer(resultOp.toString());
+        //ResultOperator resultOp = new ResultOperator(result);
+        //AnswerPrinter.printAnswer(resultOp.toString());
     }
 
     public static void main(String args[]) {

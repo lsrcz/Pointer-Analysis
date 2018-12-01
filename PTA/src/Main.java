@@ -15,9 +15,10 @@ import sun.rmi.runtime.Log;
 import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
 import jry.clonefieldCFL.CloneFieldCFLTransformer;
+import jry.basicfieldCFL.BasicFieldCFLTransformer;
 
 public class Main {
-    static LogPTATransformer trans[] = {new BasicProgramTransformer(), new CloneFieldCFLTransformer(), new InterProcedureFieldAndersonMemFixTrans()};
+    static LogPTATransformer trans[] = {new BasicFieldCFLTransformer(), new InterProcedureFieldAndersonMemFixTrans(), new CloneFieldCFLTransformer()};
     //static ExecutorService executor = Executors.newFixedThreadPool(4);
     static String dir, className;
 

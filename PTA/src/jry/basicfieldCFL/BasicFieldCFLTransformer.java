@@ -109,7 +109,7 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);
-            //System.out.println(sMethod.getActiveBody());
+            System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 // System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
@@ -117,7 +117,7 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
                         allocId = ((IntConstant) ie.getArgs().get(0)).value;
                     } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
-                        Local var = (Local) ie.getArgs().get(1);
+                        Local var = (Local) getValue(ie.getArgs().get(1));
                         int id = ((IntConstant) ie.getArgs().get(0)).value;
                         queries.put(id, var);
                     } else {
@@ -133,9 +133,10 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                     //System.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                     //System.out.println(left.getClass() + " " + left);
-                    if (right instanceof NewExpr || right instanceof NewArrayExpr) {
+                    if (right instanceof NewExpr || right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
                         totalNew += 1;
                         allocRef = new AllocRef(totalNew);
+                        // System.out.println("assign" + left + " " + allocId);
                         graphBuilder.assignAllocId(allocRef, allocId);
                         graphBuilder.addEdge(allocRef, left, 1, 0);
                         graphBuilder.addEdge(left, allocRef, -1, 0);
@@ -188,7 +189,8 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
     protected void myInternalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
         dfsMethod(mainMethod);
-
+        graphBuilder.addAllSelf(3);
+        graphBuilder.addAllSelf(-3);
         /*Chain<SootClass> sootClasses = Scene.v().getClasses();
         for (SootClass sootClass : sootClasses) {
             System.out.println(sootClass.getFields());

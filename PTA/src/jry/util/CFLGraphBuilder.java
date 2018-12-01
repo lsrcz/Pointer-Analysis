@@ -42,6 +42,13 @@ public class CFLGraphBuilder {
         allocId.put(nodeId, id);
     }
 
+    public void addAllSelf(Integer type) {
+        for (int i = 1; i <= totalId; ++i) {
+            CFLGraph.GraphEdge edge = graph.initEdge(graph.getNode(i), graph.getNode(i), type, -1);
+            graph.addEdge(edge);
+        }
+    }
+
     public void addEdge(Object u, Object v, Integer type, Object value) {
         CFLGraph.GraphNode uNode = graph.getNode(getId(u));
         CFLGraph.GraphNode vNode = graph.getNode(getId(v));

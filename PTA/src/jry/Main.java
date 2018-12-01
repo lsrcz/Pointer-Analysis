@@ -17,8 +17,8 @@ import java.util.LinkedList;
 public class Main {
 
     public static void main(String[] args) {
-        /*String dir = "resources";
-        String className = "dataset.Test50";
+        String dir = "resources";
+        String className = "dataset.Test3";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
@@ -39,12 +39,12 @@ public class Main {
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", fCFL));
         soot.Main.main(sootArgs);
         ResultOperator result = new ResultOperator(fCFL.result);
-        System.out.println(result);*/
+        System.out.println(result);
 
-        ArrayList<Class<? extends AbstractPTATransformer>> allList = new ArrayList<>();
+        /*ArrayList<Class<? extends AbstractPTATransformer>> allList = new ArrayList<>();
         //allList.add(BasicFieldCFLTransformer.class);
-        allList.add(ContextFieldCFLTransformer.class);
+        allList.add(BasicFieldCFLTransformer.class);
         RunDataset datasetRunner = new RunDataset(allList);
-        datasetRunner.testAllTransformerWithAllData();
+        datasetRunner.testAllTransformerWithSingleData(51);*/
     }
 }

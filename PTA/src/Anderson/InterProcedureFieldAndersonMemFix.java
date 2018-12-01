@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAnalysis<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> {
-    // private Map<Pair<Context, Unit>, Map<Object, FlowSet<NewExpr>>> mapPool = new HashMap<>();
+public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAnalysis<SootMethod, Unit, Map<Object, FlowSet<AnyNewExpr>>> {
+    // private Map<Pair<Context, Unit>, Map<Object, FlowSet<AnyNewExpr>>> mapPool = new HashMap<>();
     private static final Local RETURN_LOCAL = new JimpleLocal("@return", IntType.v());
     private Unit uu;
 
@@ -40,12 +40,12 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
         return null;
     }
 
-    private void assign(Object lhs, Value rhs, Map<Object, FlowSet<NewExpr>> input, Map<Object, FlowSet<NewExpr>> output) {
+    private void assign(Object lhs, Value rhs, Map<Object, FlowSet<AnyNewExpr>> input, Map<Object, FlowSet<AnyNewExpr>> output) {
         if (lhs instanceof Local) {
             output.put(lhs, new ArraySparseSet<>());
-            if (rhs instanceof NewExpr) {
+            if (rhs instanceof AnyNewExpr) {
                 output.get(lhs).clear();
-                output.get(lhs).add((NewExpr) rhs);
+                output.get(lhs).add((AnyNewExpr) rhs);
             } else if (rhs instanceof Local) {
                 Local r = getLocal(rhs);
                 output.get(lhs).clear();
@@ -58,8 +58,8 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
                 if (base instanceof Local) {
                     Local x = getLocal(base);
                     if (input.containsKey(base)) {
-                        for (NewExpr expr : input.get(base)) {
-                            Pair<NewExpr, SootField> p = new Pair<>(expr, field);
+                        for (AnyNewExpr expr : input.get(base)) {
+                            Pair<AnyNewExpr, SootField> p = new Pair<>(expr, field);
                             if (!input.containsKey(p)) {
                                 continue;
                             }
@@ -68,8 +68,8 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
                         //int j = 0;
                     }
                     /*
-                    for (NewExpr expr : input.get(base)) {
-                        Pair<NewExpr, SootField> p = new Pair<>(expr, field);
+                    for (AnyNewExpr expr : input.get(base)) {
+                        Pair<AnyNewExpr, SootField> p = new Pair<>(expr, field);
                         if (!input.containsKey(p)) {
                             continue;
                         }
@@ -82,6 +82,27 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
                 if (input.containsKey(field)) {
                     output.get(lhs).union(input.get(field));
                 }
+            } else if (rhs instanceof ArrayRef) {
+                output.get(lhs).clear();
+                Value base = ((ArrayRef)rhs).getBase();
+                if (base instanceof Local) {
+                    if (input.containsKey(base)) {
+                        for (AnyNewExpr expr : input.get(base)) {
+                            if (expr instanceof NewArrayExpr) {
+                                Pair<NewArrayExpr, String> p = new Pair<>((NewArrayExpr) expr, "Array");
+                                if (!input.containsKey(p))
+                                    continue;
+                                output.get(lhs).union(input.get(p));
+                            } else if (expr instanceof NewMultiArrayExpr) {
+                                Pair<NewMultiArrayExpr, String> p = new Pair<>((NewMultiArrayExpr)expr, "MultiArray");
+                                if (!input.containsKey(p))
+                                    continue;
+                                output.get(lhs).union(input.get(p));
+                            }
+                        }
+                    }
+                } else
+                    assert false;
             }
         } else if (lhs instanceof InstanceFieldRef) {
             if (rhs instanceof Local) {
@@ -92,8 +113,8 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
                         Local x = getLocal(base);////?
                         if (input.containsKey(base)) {
                             int s = input.get(base).size();
-                            for (NewExpr expr : input.get(base)) {
-                                Pair<NewExpr, SootField> p = new Pair<>(expr, field);
+                            for (AnyNewExpr expr : input.get(base)) {
+                                Pair<AnyNewExpr, SootField> p = new Pair<>(expr, field);
                                 if (!input.containsKey(p)) {
                                     output.put(p, new ArraySparseSet<>());
                                 }
@@ -118,9 +139,33 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
                     output.get(field).union(input.get(rhs));
                 }
             }
+        } else if (lhs instanceof ArrayRef) {
+            if (rhs instanceof Local) {
+                Value base = ((ArrayRef)lhs).getBase();
+                if (base instanceof Local) {
+                    if (input.containsKey(base)) {
+                        for (AnyNewExpr expr : input.get(base)) {
+                            if (expr instanceof NewArrayExpr) {
+                                Pair<NewArrayExpr, String> p = new Pair<>((NewArrayExpr) expr, "Array");
+                                if (!input.containsKey(p)) {
+                                    output.put(p, new ArraySparseSet<>());
+                                }
+                                output.get(p).union(input.get(rhs));
+                            } else if (expr instanceof NewMultiArrayExpr) {
+                                Pair<NewMultiArrayExpr, String> p = new Pair<>((NewMultiArrayExpr)expr, "MultiArray");
+                                if (!input.containsKey(p)) {
+                                    output.put(p, new ArraySparseSet<>());
+                                }
+                                output.get(p).union(input.get(rhs));
+                            }
+                        }
+                    }
+                } else
+                    assert false;
+            }
         }
         List<Object> keylist = new ArrayList<>();
-        for (Entry<Object, FlowSet<NewExpr>> p : output.entrySet()) {
+        for (Entry<Object, FlowSet<AnyNewExpr>> p : output.entrySet()) {
             if (p.getValue().size() == 0) {
                 keylist.add(p.getKey());
             }
@@ -130,131 +175,13 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
         }
     }
 
-    private void assignSame(Object lhs, Value rhs, Map<Object, FlowSet<NewExpr>> inout) {
-        if (lhs instanceof Local) {
-            if (rhs instanceof NewExpr) {
-                if (!lhs.equals(rhs)) {
-                    if (inout.containsKey(lhs))
-                        inout.get(lhs).clear();
-                    else
-                        inout.put(lhs, new ArraySparseSet<>());
-                    inout.get(lhs).add((NewExpr) rhs);
-                } else assert false;
-            } else if (rhs instanceof Local) {
-                Local r = getLocal(rhs);
-                if (!lhs.equals(r)) {
-                    if (inout.containsKey(lhs))
-                        inout.get(lhs).clear();
-                    else
-                        inout.put(lhs, new ArraySparseSet<>());
-                    inout.get(lhs).union(inout.get(r));
-                } else assert false;
-            } else if (rhs instanceof InstanceFieldRef) {
-                ArraySparseSet<NewExpr> n = new ArraySparseSet<>();
-                // no need to check that lhs != rhs
-                Value base = ((InstanceFieldRef)rhs).getBase();
-                SootField field = ((InstanceFieldRef)rhs).getField();
-                if (base instanceof Local) {
-                    Local x = getLocal(base);
-                    for (NewExpr expr : inout.get(base)) {
-                        Pair<NewExpr, SootField> p = new Pair<>(expr, field);
-                        if (!inout.containsKey(p)) {
-                            continue;
-                        }
-                        n.union(inout.get(p));
-                    }
-                }
-                inout.put(lhs, n);
-            } else if (rhs instanceof StaticFieldRef) { //////
-                if (!lhs.equals(rhs)) {
-                    SootField field = ((StaticFieldRef) rhs).getField();
-                    if (!lhs.equals(field)) {
-                        if (inout.containsKey(lhs))
-                            inout.get(lhs).clear();
-                        else
-                            inout.put(lhs, new ArraySparseSet<>());
-                        if (inout.containsKey(field)) {
-                            inout.get(lhs).union(inout.get(field));
-                        }
-                    }
-                }
-            }
-        } else if (lhs instanceof InstanceFieldRef) {
-            if (rhs instanceof Local) {
-                // no need
-                if (inout.containsKey(rhs)) {
-                    Value base = ((InstanceFieldRef) lhs).getBase();
-                    SootField field = ((InstanceFieldRef) lhs).getField();
-                    if (base instanceof Local) {
-                        Local x = getLocal(base);
-                        int s = inout.get(base).size();
-                        for (NewExpr expr : inout.get(base)) {
-                            Pair<NewExpr, SootField> p = new Pair<>(expr, field);
-                            if (!inout.containsKey(p)) {
-                                inout.put(p, new ArraySparseSet<>());
-                            }
-                            if (s == 1) {
-                                inout.get(p).clear();
-                            }
-                            inout.get(p).union(inout.get(rhs));
-                        }
-                    }
-                }
-            }
-        } else if (lhs instanceof StaticFieldRef) {
-            if (rhs instanceof Local) {
-                SootField field = ((StaticFieldRef)lhs).getField();
-                if (!lhs.equals(field)) {
-                    if (!inout.containsKey(field)) {
-                        inout.put(field, new ArraySparseSet<>());
-                    } else {
-                        inout.get(field).clear();
-                    }
-                    inout.get(field).union(inout.get(rhs));
-                }
-            }
-        }
-
-        List<Object> keylist = new ArrayList<>();
-        for (Entry<Object, FlowSet<NewExpr>> p : inout.entrySet()) {
-            if (p.getValue().size() == 0) {
-                keylist.add(p.getKey());
-            }
-        }
-        for (Object key : keylist) {
-            inout.remove(key);
-        }
-    }
-
-/*    @Override
-    public Map<Object, FlowSet<NewExpr>> normalFlowFunction(
-            Context<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> context,
-            Unit unit,
-            Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
-
-        // Map<Object, FlowSet<NewExpr>> outValue = localFlowSetMap; //this.copy(localFlowSetMap);
-        Value lhsOp;
-        uu = unit;
-        if (unit instanceof AssignStmt) {
-            lhsOp = ((AssignStmt)unit).getLeftOp();
-            Value rhsOp = ((AssignStmt)unit).getRightOp();
-            assignSame(lhsOp, rhsOp, localFlowSetMap);
-        } else if (unit instanceof ReturnStmt) {
-            lhsOp = ((ReturnStmt)unit).getOp();
-            assignSame(RETURN_LOCAL, lhsOp, localFlowSetMap);
-        }
-        return localFlowSetMap;
-    }
-*/
-
-
     @Override
-    public Map<Object, FlowSet<NewExpr>> normalFlowFunction(
-            Context<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> context,
+    public Map<Object, FlowSet<AnyNewExpr>> normalFlowFunction(
+            Context<SootMethod, Unit, Map<Object, FlowSet<AnyNewExpr>>> context,
             Unit unit,
-            Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
+            Map<Object, FlowSet<AnyNewExpr>> localFlowSetMap) {
 
-        Map<Object, FlowSet<NewExpr>> outValue = this.copy(localFlowSetMap);
+        Map<Object, FlowSet<AnyNewExpr>> outValue = this.copy(localFlowSetMap);
         Value lhsOp;
         uu = unit;
         if (unit instanceof AssignStmt) {
@@ -264,20 +191,22 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
         } else if (unit instanceof ReturnStmt) {
             lhsOp = ((ReturnStmt)unit).getOp();
             assign(RETURN_LOCAL, lhsOp, localFlowSetMap, outValue);
+        } else if (unit instanceof ThrowStmt) {
+            outValue.put(RETURN_LOCAL, new ArraySparseSet<>());
         }
         return outValue;
     }
 
     @Override
-    public Map<Object, FlowSet<NewExpr>> callEntryFlowFunction(
-            Context<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> context,
+    public Map<Object, FlowSet<AnyNewExpr>> callEntryFlowFunction(
+            Context<SootMethod, Unit, Map<Object, FlowSet<AnyNewExpr>>> context,
             SootMethod sootMethod,
             Unit unit,
-            Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
+            Map<Object, FlowSet<AnyNewExpr>> localFlowSetMap) {
         uu = unit;
-        //Map<Object, FlowSet<NewExpr>> entryValue = this.copy(localFlowSetMap);
-        Map<Object, FlowSet<NewExpr>> entryValue = this.topValue();
-        for (Entry<Object, FlowSet<NewExpr>> entry : localFlowSetMap.entrySet()) {
+        //Map<Object, FlowSet<AnyNewExpr>> entryValue = this.copy(localFlowSetMap);
+        Map<Object, FlowSet<AnyNewExpr>> entryValue = this.topValue();
+        for (Entry<Object, FlowSet<AnyNewExpr>> entry : localFlowSetMap.entrySet()) {
             /*if (entry.getKey() instanceof SootField || entry.getKey() instanceof Pair) {
                 entryValue.put(entry.getKey(), entry.getValue());
             } else*/ if (entry.getKey() instanceof Local) {
@@ -306,14 +235,14 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
     }
 
     @Override
-    public Map<Object, FlowSet<NewExpr>> callExitFlowFunction(
-            Context<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> context,
+    public Map<Object, FlowSet<AnyNewExpr>> callExitFlowFunction(
+            Context<SootMethod, Unit, Map<Object, FlowSet<AnyNewExpr>>> context,
             SootMethod sootMethod,
             Unit unit,
-            Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
+            Map<Object, FlowSet<AnyNewExpr>> localFlowSetMap) {
         uu = unit;
-        Map<Object, FlowSet<NewExpr>> afterCallValue = this.copy(localFlowSetMap);
-        //Map<Object, FlowSet<NewExpr>> afterCallValue = this.topValue();
+        Map<Object, FlowSet<AnyNewExpr>> afterCallValue = this.copy(localFlowSetMap);
+        //Map<Object, FlowSet<AnyNewExpr>> afterCallValue = this.topValue();
         if (unit instanceof AssignStmt) {
             Value lhsOp = ((AssignStmt)unit).getLeftOp();
             assign((Local)lhsOp, RETURN_LOCAL, localFlowSetMap, afterCallValue);
@@ -322,8 +251,8 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
     }
 
     @Override
-    public Map<Object, FlowSet<NewExpr>> callLocalFlowFunction(Context<SootMethod, Unit, Map<Object, FlowSet<NewExpr>>> context, Unit unit, Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
-        Map<Object, FlowSet<NewExpr>> afterCallValue = this.copy(localFlowSetMap);
+    public Map<Object, FlowSet<AnyNewExpr>> callLocalFlowFunction(Context<SootMethod, Unit, Map<Object, FlowSet<AnyNewExpr>>> context, Unit unit, Map<Object, FlowSet<AnyNewExpr>> localFlowSetMap) {
+        Map<Object, FlowSet<AnyNewExpr>> afterCallValue = this.copy(localFlowSetMap);
         uu = unit;
         if (unit instanceof AssignStmt) {
             Value lhsOp = ((AssignStmt)unit).getLeftOp();
@@ -334,15 +263,15 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
     }
 
     @Override
-    public Map<Object, FlowSet<NewExpr>> boundaryValue(SootMethod sootMethod) {
+    public Map<Object, FlowSet<AnyNewExpr>> boundaryValue(SootMethod sootMethod) {
         return this.topValue();
     }
 
     @Override
-    public Map<Object, FlowSet<NewExpr>> copy(Map<Object, FlowSet<NewExpr>> localFlowSetMap) {
+    public Map<Object, FlowSet<AnyNewExpr>> copy(Map<Object, FlowSet<AnyNewExpr>> localFlowSetMap) {
         // efficient?
 
-        Map<Object, FlowSet<NewExpr>> ret = new HashMap<>();
+        Map<Object, FlowSet<AnyNewExpr>> ret = new HashMap<>();
         for (Object l: localFlowSetMap.keySet()) {
             ret.put(l, new ArraySparseSet<>());
             localFlowSetMap.get(l).copy(ret.get(l));
@@ -353,14 +282,14 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
     }
 
     @Override
-    public Map<Object, FlowSet<NewExpr>> meet(Map<Object, FlowSet<NewExpr>> localFlowSetMap, Map<Object, FlowSet<NewExpr>> a1) {
+    public Map<Object, FlowSet<AnyNewExpr>> meet(Map<Object, FlowSet<AnyNewExpr>> localFlowSetMap, Map<Object, FlowSet<AnyNewExpr>> a1) {
         // efficient or error?
-        Map<Object, FlowSet<NewExpr>> ret = localFlowSetMap;// new HashMap<>(localFlowSetMap);
+        Map<Object, FlowSet<AnyNewExpr>> ret = localFlowSetMap;// new HashMap<>(localFlowSetMap);
         for (Object l: a1.keySet()) {
             if (localFlowSetMap.containsKey(l)) {
-                FlowSet<NewExpr> set1 = localFlowSetMap.get(l);
-                FlowSet<NewExpr> set2 = a1.get(l);
-                FlowSet<NewExpr> nset = new ArraySparseSet<>();
+                FlowSet<AnyNewExpr> set1 = localFlowSetMap.get(l);
+                FlowSet<AnyNewExpr> set2 = a1.get(l);
+                FlowSet<AnyNewExpr> nset = new ArraySparseSet<>();
                 set1.union(set2, nset);
                 ret.put(l, nset);
             } else {
@@ -375,7 +304,7 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
     }
 
     @Override
-    public Map<Object, FlowSet<NewExpr>> topValue() {
+    public Map<Object, FlowSet<AnyNewExpr>> topValue() {
         return new HashMap<>();
     }
 }

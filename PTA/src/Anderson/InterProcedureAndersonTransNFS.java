@@ -19,9 +19,9 @@ public class InterProcedureAndersonTransNFS extends SceneTransformer {
         analysis = new InterProcedureAndersonNFS();
         DataFlowSolutionToResultOperator converter = new DataFlowSolutionToResultOperator();
         analysis.doAnalysis();
-        DataFlowSolution<Unit, Map<Local, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
-        ResultOperator ro = converter.convertLocal(solution);
-        System.out.println(ro);
+        //DataFlowSolution<Unit, Map<Local, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
+        //ResultOperator ro = converter.convertLocal(solution);
+        //System.out.println(ro);
     }
 
     public static void main(String args[]) {

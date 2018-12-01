@@ -1,5 +1,6 @@
 package jry;
 
+import basic.BasicProgramTransformer;
 import jry.basicfieldCFL.BasicFieldCFLTransformer;
 import jry.clonefieldCFL.CloneFieldCFLTransformer;
 import jry.contextfieldCFL.ContextFieldCFLTransformer;
@@ -18,7 +19,7 @@ public class Main {
 
     public static void main(String[] args) {
         String dir = "resources";
-        String className = "dataset.Test3";
+        String className = "dataset.Test50";
         String classPath = dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
@@ -42,9 +43,9 @@ public class Main {
         System.out.println(result);
 
         /*ArrayList<Class<? extends AbstractPTATransformer>> allList = new ArrayList<>();
-        //allList.add(BasicFieldCFLTransformer.class);
-        allList.add(BasicFieldCFLTransformer.class);
+        allList.add(BasicProgramTransformer.class);
+        allList.add(ContextFieldCFLTransformer.class);
         RunDataset datasetRunner = new RunDataset(allList);
-        datasetRunner.testAllTransformerWithSingleData(51);*/
+        datasetRunner.testAllTransformerWithAllData(16, 30);*/
     }
 }

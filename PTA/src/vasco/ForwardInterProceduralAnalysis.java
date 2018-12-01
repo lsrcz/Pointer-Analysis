@@ -51,16 +51,25 @@ public abstract class ForwardInterProceduralAnalysis<M,N,A> extends InterProcedu
 
 	}
 
+	public void initEntryPoints() {
+	    for (M method : programRepresentation().getEntryPoints()) {
+	        initContext(method, boundaryValue(method));
+        }
+    }
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
 	public void doAnalysis() {
 
+	    initEntryPoints();
+
+	    /*
 		// Initial contexts
 		for (M method : programRepresentation().getEntryPoints()) {
 			initContext(method, boundaryValue(method));
-		}
+		}*/
 
 		// Perform work-list based analysis
 		while (!worklist.isEmpty()) {

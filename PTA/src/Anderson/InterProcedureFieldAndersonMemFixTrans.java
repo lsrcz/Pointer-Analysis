@@ -47,7 +47,7 @@ public class InterProcedureFieldAndersonMemFixTrans extends LogPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "dataset.Test59";
+        String className = "test.HelloArray";
 
         Main.main(new String[]{
                 "-w",

@@ -5,6 +5,7 @@ import jry.evaluation.LogPTATransformer;
 import jry.util.*;
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.internal.JNewArrayExpr;
 import soot.toolkits.scalar.ArraySparseSet;
 import vasco.callgraph.CallGraphTransformer;
 import soot.util.Chain;
@@ -188,6 +189,18 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
 
     protected void myInternalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
+
+
+        List<Local> pa = mainMethod.getActiveBody().getParameterLocals();
+        for (int i = 0; i < pa.size(); ++i) {
+            totalNew += 1;
+            NewArrayExpr nae = new JNewArrayExpr(pa.get(i).getType(), IntConstant.v(100));
+            AllocRef allocRef = new AllocRef(totalNew);
+            graphBuilder.assignAllocId(allocRef, 0);
+            graphBuilder.addEdge(allocRef, pa.get(i), 1, 0);
+            graphBuilder.addEdge(pa.get(i), allocRef, -1, 0);
+        }
+
         dfsMethod(mainMethod);
         graphBuilder.addAllSelf(3);
         graphBuilder.addAllSelf(-3);
@@ -211,7 +224,7 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "dataset.Test51";
+        String className = "test.HelloArray";
 
         soot.Main.main(new String[]{
                 "-w",

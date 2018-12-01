@@ -44,8 +44,8 @@ public class Main {
 
         ArrayList<Class<? extends AbstractPTATransformer>> allList = new ArrayList<>();
         //allList.add(BasicProgramTransformer.class);
-        allList.add(BasicFieldCFLTransformer.class);
+        allList.add(CloneFieldCFLTransformer.class);
         RunDataset datasetRunner = new RunDataset(allList);
-        datasetRunner.testAllTransformerWithAllData(60, 60);
+        datasetRunner.testAllTransformerWithAllData(57, 58);
     }
 }

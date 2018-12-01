@@ -75,11 +75,22 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
         return result;
     }
 
+    class FakeFieldRef {
+        Local base;
+        Object key;
+        public FakeFieldRef(Local _base, Object _key) {
+            base = _base;
+            key = _key;
+        }
+    }
+
     private Object getValue(Value var) {
         if (var instanceof ArrayRef) {
-            return ((ArrayRef) var).getBase();
+            return new FakeFieldRef((Local)((ArrayRef) var).getBase(), "fake");
         } else if (var instanceof StaticFieldRef) {
-            return ((StaticFieldRef) var).getFieldRef();
+            return ((StaticFieldRef) var).getField();
+        } else if (var instanceof InstanceFieldRef) {
+            return new FakeFieldRef((Local)((InstanceFieldRef) var).getBase(), ((InstanceFieldRef) var).getField());
         }
         return var;
     }
@@ -135,8 +146,8 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                             nodeList.add(leftm);
                             graphBuilder.addEdge(basem, leftm, 3, 0);
                             graphBuilder.addEdge(leftm, basem, -3, 0);
-                        } else if (left instanceof InstanceFieldRef) {
-                            Local LeftBase = (Local) (((InstanceFieldRef) left).getBase());
+                        } else if (left instanceof FakeFieldRef) {
+                            Local LeftBase = ((FakeFieldRef)left).base;
                             SootObjectWithCallsite LeftBasem = new SootObjectWithCallsite(LeftBase, sMethod, depth, callStack);
                             SootObjectWithCallsite basem = new SootObjectWithCallsite(base, sMethod, depth, callStack);
                             /*System.out.println("-----");
@@ -144,8 +155,8 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                             System.out.println(basem);*/
                             nodeList.add(LeftBasem);
                             nodeList.add(basem);
-                            graphBuilder.addEdge(basem, LeftBasem, 4, ((InstanceFieldRef) left).getField());
-                            graphBuilder.addEdge(LeftBasem, basem, -5, ((InstanceFieldRef) left).getField());
+                            graphBuilder.addEdge(basem, LeftBasem, 4, ((FakeFieldRef)left).key);
+                            graphBuilder.addEdge(LeftBasem, basem, -5, ((FakeFieldRef)left).key);
                         } else {
                             assert false;
                         }
@@ -254,29 +265,29 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                             nodeList.add(rightm);
                             graphBuilder.addEdge(rightm, leftm, 3, 0);
                             graphBuilder.addEdge(leftm, rightm, -3, 0);
-                        } else if (left instanceof InstanceFieldRef) {
-                            Local base = (Local) (((InstanceFieldRef) left).getBase());
+                        } else if (left instanceof FakeFieldRef) {
+                            Local base = ((FakeFieldRef)left).base;
                             SootObjectWithCallsite basem = new SootObjectWithCallsite(base, sMethod, depth, callStack);
                             /*System.out.println("-----");
                             System.out.println(basem);
                             System.out.println(rightm);*/
                             nodeList.add(basem);
                             nodeList.add(rightm);
-                            graphBuilder.addEdge(rightm, basem, 4, ((InstanceFieldRef) left).getField());
-                            graphBuilder.addEdge(basem, rightm, -5, ((InstanceFieldRef) left).getField());
+                            graphBuilder.addEdge(rightm, basem, 4,((FakeFieldRef)left).key);
+                            graphBuilder.addEdge(basem, rightm, -5, ((FakeFieldRef)left).key);
                         } else {
                             assert false;
                         }
-                    } else if (right instanceof InstanceFieldRef) {
-                        Local base = (Local) ((InstanceFieldRef) right).getBase();
+                    } else if (right instanceof FakeFieldRef) {
+                        Local base = ((FakeFieldRef)right).base;
                         SootObjectWithCallsite basem = new SootObjectWithCallsite(base, sMethod, depth, callStack);
                         /*System.out.println("-----");
                         System.out.println(basem);
                         System.out.println(leftm);*/
                         nodeList.add(basem);
                         nodeList.add(leftm);
-                        graphBuilder.addEdge(basem, leftm, -4, ((InstanceFieldRef) right).getField());
-                        graphBuilder.addEdge(leftm, basem, 5, ((InstanceFieldRef) right).getField());
+                        graphBuilder.addEdge(basem, leftm, -4, ((FakeFieldRef)right).key);
+                        graphBuilder.addEdge(leftm, basem, 5, ((FakeFieldRef)right).key);
                     } else if (right instanceof ParameterRef) {
                     } else if (right instanceof InvokeExpr){
                         InvokeExpr ie = (InvokeExpr)right;
@@ -298,13 +309,13 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                                     nodeList.add(leftm);
                                     graphBuilder.addEdge(returnm, leftm, 3, 0);
                                     graphBuilder.addEdge(leftm, returnm, -3, 0);
-                                } else if (left instanceof InstanceFieldRef) {
-                                    Local base = (Local) (((InstanceFieldRef) left).getBase());
+                                } else if (left instanceof FakeFieldRef) {
+                                    Local base = ((FakeFieldRef)left).base;
                                     SootObjectWithCallsite basem = new SootObjectWithCallsite(base, sMethod, depth, callStack);
                                     nodeList.add(returnm);
                                     nodeList.add(basem);
-                                    graphBuilder.addEdge(basem, returnm, 4, ((InstanceFieldRef) left).getField());
-                                    graphBuilder.addEdge(returnm, basem, -5, ((InstanceFieldRef) left).getField());
+                                    graphBuilder.addEdge(basem, returnm, 4, ((FakeFieldRef)left).key);
+                                    graphBuilder.addEdge(returnm, basem, -5, ((FakeFieldRef)left).key);
                                 }
                             }
                         }

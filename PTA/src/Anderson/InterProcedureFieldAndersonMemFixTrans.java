@@ -7,6 +7,7 @@ import soot.Main;
 import soot.PackManager;
 import soot.Transform;
 import soot.Unit;
+import soot.jimple.AnyNewExpr;
 import soot.jimple.NewExpr;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
@@ -31,7 +32,7 @@ public class InterProcedureFieldAndersonMemFixTrans extends LogPTATransformer {
         solutionToResultOp = new DataFlowSolutionToResultOperator();
         analysis = new InterProcedureFieldAndersonMemFix();
         analysis.doAnalysis();
-        DataFlowSolution<Unit, Map<Object, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
+        DataFlowSolution<Unit, Map<Object, FlowSet<AnyNewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
         ResultOperator resultOp = solutionToResultOp.convert(solution);
         result = resultOp.getResult();
         System.out.println(resultOp.toString());
@@ -46,11 +47,11 @@ public class InterProcedureFieldAndersonMemFixTrans extends LogPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "dataset.Test11";
+        String className = "dataset.Test59";
 
         Main.main(new String[]{
                 "-w",
-                "-app", "-pp",
+                "-app",
                 "-keep-line-number",
                 "-keep-bytecode-offset",
                 "-p", "cg", "implicit-entry:false",

@@ -51,22 +51,22 @@ public class InterFlowCS {
         b4 = b.func(b2, b1);
         Rec r = new Rec();
         B b6 = r.func(b1, -20);
-        B btmp, b5;
-        btmp = b1;
-        b1 = b2;
-        b2 = btmp;
-        b5 = b.func(b1, b2);
+        //B btmp, b5;
+        //btmp = b1;
+        //b1 = b2;
+        //b2 = btmp;
+        //b5 = b.func(b1, b2);
 
-        B b7 = r.func(b1, -20);
+        //B b7 = r.func(b1, -20);
         Benchmark.test(1, a1); // 1
         Benchmark.test(2, a2); // 1
         Benchmark.test(3, b1); // 4
         Benchmark.test(4, b2); // 3
         Benchmark.test(5, b3); // 3
         Benchmark.test(6, b4); // 4
-        Benchmark.test(7, b5); // 4
+        //Benchmark.test(7, b5); // 4
         Benchmark.test(8, b6); // 3
-        Benchmark.test(9, b7); // 4
+        //Benchmark.test(9, b7); // 4
     }
     public static void main(String[] args) {
         InterFlowCS i = new InterFlowCS();

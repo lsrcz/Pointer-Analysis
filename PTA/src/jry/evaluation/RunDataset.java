@@ -147,10 +147,10 @@ public class RunDataset {
                 for (Integer allocId : entry.getValue()) {
                     if (!currentRes.contains(allocId)) {
                         System.err.printf("Error %d!\n", id);
+                        assert currentRes.contains(allocId);
                         break;
                         // System.exit(-1);
                     }
-                    assert currentRes.contains(allocId);
                 }
                 if (allMerge == null) allMerge = currentRes.clone();
                 else allMerge.intersection(currentRes, allMerge);

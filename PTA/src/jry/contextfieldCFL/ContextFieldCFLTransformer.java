@@ -231,6 +231,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
             graphBuilder.assignAllocId(findRoot(new LocalRef(entry.getKey())), entry.getValue());
         }
         graphBuilder.addAllSelf(2);
+        graphBuilder.addAllSelf(0);
     }
 
     void getAllUsedLocalRef(){
@@ -281,6 +282,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                         int where = right.getIndex();
                         if (args.get(where) instanceof Local) {
                             addAssignEdge(left, args.get(where), location, 1);
+                            addAssignEdge(args.get(where), left, location, -1);
                         }
                     }
                 }
@@ -387,7 +389,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                                 if (left instanceof Local || left instanceof SootField) {
                                     addAssignEdge(left, returnObj, unit, -1);
                                 } else if (left instanceof FakeFieldRef) {
-                                    addAssignEdge(((FakeFieldRef)left).base, returnObj, ((FakeFieldRef)left).key, unit, -1);
+                                    addAssignEdge(((FakeFieldRef)left).base, ((FakeFieldRef)left).key, returnObj, unit, -1);
                                 }
                             }
                         }

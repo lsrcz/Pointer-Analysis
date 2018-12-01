@@ -99,7 +99,7 @@ public class Test49 {
         Test49A a2 = new Test49C();
         Test49A t = a.func1(a1, a2);
         a1 = a2;
-        Test49A t1 = a.func1(a1, a2);
+        Test49A t1 = a.func2(a1, a2);
         Benchmark.test(1, t); // 2
         Benchmark.test(2, t1); // 3
     }

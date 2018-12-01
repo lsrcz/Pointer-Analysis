@@ -31,7 +31,7 @@ class Test57 {
         b1.a = aa;
         b1.setPos(1, a1);
 
-       Benchmark.alloc(5);
+        Benchmark.alloc(5);
         b2 = new Test57B();
         int t = 10;
         Benchmark.alloc(6);

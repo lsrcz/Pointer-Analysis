@@ -3,6 +3,7 @@ package jry.evaluation;
 import java.util.Map;
 
 public abstract class LogPTATransformer extends AbstractPTATransformer {
+    public boolean fail = false;
     abstract protected void myInternalTransform(String s, Map<String, String> map);
 
     @Override
@@ -12,6 +13,7 @@ public abstract class LogPTATransformer extends AbstractPTATransformer {
             myInternalTransform(s, map);
         } catch (Exception e) {
             e.printStackTrace();
+            fail = true;
         }
         System.out.println("[Finish Analyze] " + this.getClass());
     }

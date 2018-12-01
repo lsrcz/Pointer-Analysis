@@ -4,18 +4,20 @@ import java.util.concurrent.*;
 
 import Anderson.InterProcedureFieldAndersonMemFixTrans;
 import jry.evaluation.AbstractPTATransformer;
+import jry.evaluation.LogPTATransformer;
 import jry.util.ResultOperator;
 import basic.BasicProgramTransformer;
 
 import soot.PackManager;
 import soot.Transform;
 import soot.toolkits.scalar.ArraySparseSet;
+import sun.rmi.runtime.Log;
 import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
 import jry.clonefieldCFL.CloneFieldCFLTransformer;
 
 public class Main {
-    static AbstractPTATransformer trans[] = {new BasicProgramTransformer(), new CloneFieldCFLTransformer(), new InterProcedureFieldAndersonMemFixTrans()};
+    static LogPTATransformer trans[] = {new BasicProgramTransformer(), new CloneFieldCFLTransformer(), new InterProcedureFieldAndersonMemFixTrans()};
     //static ExecutorService executor = Executors.newFixedThreadPool(4);
     static String dir, className;
 
@@ -126,6 +128,9 @@ public class Main {
         runTransformers();
         for (int i = 0; i < trans.length; i++) {
             try {
+                if (trans[i].fail) {
+                    continue;
+                }
                 Map<Integer, ArraySparseSet<Integer>> x = trans[i].getResult();
                 if (resultOp == null) {
                     resultOp = new ResultOperator(x);

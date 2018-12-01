@@ -1,5 +1,6 @@
 package jry.contextfieldCFL;
 
+import jry.clonefieldCFL.CloneFieldCFLTransformer;
 import jry.evaluation.LogPTATransformer;
 import jry.util.AllocRef;
 import jry.util.CFLGraphBuilder;
@@ -44,10 +45,9 @@ class LocalRef{
         trace = _trace;
     }
 
-    public LocalRef add(SootField currentField) {
-        if (trace instanceof SootField)
-            return new LocalRef(root, (SootField)trace);
-        else return new LocalRef(root, currentField);
+    public LocalRef add(Object currentField) {
+        if (trace.equals(-1)) return new LocalRef(root, currentField);
+        else return new LocalRef(root, trace);
     }
 }
 
@@ -62,14 +62,23 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     int depth = 1;
     int totalNew = 0;
 
+    class FakeFieldRef {
+        Local base;
+        Object key;
+        public FakeFieldRef(Local _base, Object _key) {
+            base = _base;
+            key = _key;
+        }
+    }
+
     class AssignEdge {
         Object v;
         // type0: v = u, type1: v.x = u, type2: v = u.x;
         int type;
-        SootField sField;
+        Object sField;
         Unit callPosition;
         int callType;
-        public AssignEdge(Object _local, int _type, SootField _sField, Unit _callPosition, int _callType) {
+        public AssignEdge(Object _local, int _type, Object _sField, Unit _callPosition, int _callType) {
             v = _local; type = _type; sField = _sField; callPosition = _callPosition; callType = _callType;
         }
 
@@ -223,9 +232,11 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
 
     private Object getValue(Value var) {
         if (var instanceof ArrayRef) {
-            return ((ArrayRef) var).getBase();
+            return new FakeFieldRef((Local)((ArrayRef) var).getBase(), "fake");
         } else if (var instanceof StaticFieldRef) {
             return ((StaticFieldRef) var).getField();
+        } else if (var instanceof InstanceFieldRef) {
+            return new FakeFieldRef((Local)((InstanceFieldRef) var).getBase(), ((InstanceFieldRef) var).getField());
         }
         return var;
     }
@@ -340,15 +351,15 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                     } else if (right instanceof Local || right instanceof SootField) {
                         if (left instanceof Local || left instanceof SootField) {
                             addAssignEdge(left, right, null, 0);
-                        } else if (left instanceof InstanceFieldRef) {
-                            Local base = (Local) (((InstanceFieldRef) left).getBase());
-                            addAssignEdge(base, ((InstanceFieldRef) left).getField(), right, null, 0);
+                        } else if (left instanceof FakeFieldRef) {
+                            Local base = ((FakeFieldRef)left).base;
+                            addAssignEdge(base, ((FakeFieldRef)left).key, right, null, 0);
                         } else {
                             assert false;
                         }
-                    } else if (right instanceof InstanceFieldRef) {
-                        Local base = (Local) ((InstanceFieldRef) right).getBase();
-                        addAssignEdge(left, base, ((InstanceFieldRef) right).getField(), null, 0);
+                    } else if (right instanceof FakeFieldRef) {
+                        Local base = ((FakeFieldRef)right).base;
+                        addAssignEdge(left, base, ((FakeFieldRef)right).key, null, 0);
                     } else if (right instanceof ParameterRef) {
                     } else if (right instanceof InvokeExpr){
                         InvokeExpr ie = (InvokeExpr)right;
@@ -360,8 +371,8 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                             for (Local returnObj: returnObjs) {
                                 if (left instanceof Local || left instanceof SootField) {
                                     addAssignEdge(left, returnObj, unit, -1);
-                                } else if (left instanceof InstanceFieldRef) {
-                                    addAssignEdge(((InstanceFieldRef) left).getBase(), returnObj, ((InstanceFieldRef) left).getField(), unit, -1);
+                                } else if (left instanceof FakeFieldRef) {
+                                    addAssignEdge(((FakeFieldRef)left).base, returnObj, ((FakeFieldRef)left).key, unit, -1);
                                 }
                             }
                         }
@@ -405,14 +416,14 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         //System.out.println("[Link] " + u + " " + v);
     }
 
-    void addAssignEdge(Local u, SootField sField, Object v, Unit callPosition, int callType) {
+    void addAssignEdge(Local u, Object sField, Object v, Unit callPosition, int callType) {
         initNode(u);
         initNode(v);
         tryInsertNewLocalRef(new LocalRef(u, sField));
         assignGraph.get(v).add(new AssignEdge(u, 1, sField, callPosition, callType));
     }
 
-    void addAssignEdge(Object u, Object v, SootField sField, Unit callPosition, int callType) {
+    void addAssignEdge(Object u, Object v, Object sField, Unit callPosition, int callType) {
         initNode(u);
         initNode(v);
         tryInsertNewLocalRef(new LocalRef(v, sField));

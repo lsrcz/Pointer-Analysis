@@ -82,6 +82,17 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
             base = _base;
             key = _key;
         }
+
+        @Override
+        public int hashCode() {
+            return base.hashCode() + key.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof FakeFieldRef)) return false;
+            return base.equals(((FakeFieldRef) obj).base) && key.equals(((FakeFieldRef) obj).key);
+        }
     }
 
     private Object getValue(Value var) {
@@ -134,7 +145,7 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                     Value right = ((DefinitionStmt) unit).getRightOp();
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                     if (right instanceof ThisRef) {
-                        if ((left instanceof Local) || (left instanceof SootFieldRef)) {
+                        if ((left instanceof Local) || (left instanceof SootField)) {
                             SootObjectWithCallsite basem = new SootObjectWithCallsite(base, oldMethod, depth, callStack);
                             callStack.addFirst(new Pair<>(sMethod, 1)); // dummy
                             SootObjectWithCallsite leftm = new SootObjectWithCallsite(left, sMethod, depth, callStack);
@@ -208,7 +219,7 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 callStack.addFirst(new Pair<>(sMethod, line));
                 line++;
-                // System.out.println("  [Unit] " + unit + " " + unit.getClass());
+                //System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
@@ -226,25 +237,19 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                         }
                     }
                 } else if (unit instanceof DefinitionStmt) {
-                    // System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
+                    //System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
                     Object right = getValue(((DefinitionStmt) unit).getRightOp());
-                    // System.out.println(right.getClass() + " " + right);
+                    //ystem.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                     SootObjectWithCallsite leftm = new SootObjectWithCallsite(left, sMethod, depth, callStack);
                     SootObjectWithCallsite rightm = new SootObjectWithCallsite(right, sMethod, depth, callStack);
-                    if (left instanceof SootFieldRef) {
-                        if (((SootFieldRef)left).isStatic()) {
-                            SootFieldRef sfr = (SootFieldRef)left;
-                            leftm = new SootObjectWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
-                            //leftm = new MethodWithCallsite(left, DUMMY_METHOD, depth, new LinkedList<>());
-                        }
+                    if (left instanceof SootField) {
+                        SootField sfr = (SootField)left;
+                        leftm = new SootObjectWithCallsite(sfr, DUMMY_METHOD, depth, new LinkedList<>());
                     }
-                    if (right instanceof SootFieldRef) {
-                        if (((SootFieldRef)right).isStatic()) {
-                            //rightm = new MethodWithCallsite(right, DUMMY_METHOD, depth, new LinkedList<>());
-                            SootFieldRef sfr = (SootFieldRef)right;
-                            rightm = new SootObjectWithCallsite(new Pair<>(sfr.name(), sfr.type()), DUMMY_METHOD, depth, new LinkedList<>());
-                        }
+                    if (right instanceof SootField) {
+                        SootField sfr = (SootField)right;
+                        rightm = new SootObjectWithCallsite(sfr, DUMMY_METHOD, depth, new LinkedList<>());
                     }
                     if (right instanceof NewExpr || right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
                         //System.out.println("-----");
@@ -256,8 +261,8 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                         graphBuilder.addEdge(allocRef, leftm, 1, 0);
                         graphBuilder.addEdge(leftm, allocRef, -1, 0);
                         allocId = 0;
-                    } else if ((right instanceof Local) || (right instanceof SootFieldRef)) {
-                        if ((left instanceof Local) || (left instanceof SootFieldRef)) {
+                    } else if ((right instanceof Local) || (right instanceof SootField)) {
+                        if ((left instanceof Local) || (left instanceof SootField)) {
                             /*System.out.println("-----");
                             System.out.println(leftm);
                             System.out.println(rightm);*/
@@ -304,7 +309,7 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                                 System.out.println(returnm);
                                 System.out.println(leftm);*/
                                 callStack.removeFirst();
-                                if ((left instanceof Local) || (left instanceof SootFieldRef)) {
+                                if ((left instanceof Local) || (left instanceof SootField)) {
                                     nodeList.add(returnm);
                                     nodeList.add(leftm);
                                     graphBuilder.addEdge(returnm, leftm, 3, 0);

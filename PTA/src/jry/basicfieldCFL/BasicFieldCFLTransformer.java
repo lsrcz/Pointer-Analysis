@@ -212,11 +212,11 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
-        String className = "test.InterFlowCS";
+        String className = "dataset.Test51";
 
         soot.Main.main(new String[]{
                 "-w",
-                "-app", "-pp",
+                "-app",
                 "-keep-line-number",
                 "-keep-bytecode-offset",
                 "-p", "cg", "implicit-entry:false",

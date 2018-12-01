@@ -19,7 +19,6 @@ import java.lang.reflect.Array;
 import java.util.*;
 
 public class RunDataset {
-    final int datasetSize = 49;
     ArrayList<Class<? extends AbstractPTATransformer>> allTransformer = new ArrayList<>();
 
     public RunDataset(){
@@ -36,12 +35,17 @@ public class RunDataset {
         for (String line : lines) {
             String[] words = line.split(":? ");
             // assert words.length > 1;
-            int queryId = Integer.parseInt(words[0]);
+            int queryID;
+            if (words[0].endsWith(":"))
+                queryID = Integer.parseInt(words[0].substring(0, words[0].length() - 1));
+            else
+                queryID =  Integer.parseInt(words[0]);
+
             ArraySparseSet<Integer> currentRes = new ArraySparseSet<>();
             for (int i = 1; i < words.length; ++i) {
                 currentRes.add(Integer.parseInt(words[i]));
             }
-            result.put(queryId, currentRes);
+            result.put(queryID, currentRes);
         }
         // System.out.println(result);
         return result;
@@ -137,11 +141,13 @@ public class RunDataset {
             for (Map<Integer, ArraySparseSet<Integer>> result : allResult) {
                 //assert result.containsKey(entry.getKey());
                 ArraySparseSet currentRes = result.get(entry.getKey());
+                if (currentRes == null)
+                    currentRes = new ArraySparseSet();
                 // System.out.println(entry.getValue() + " " + currentRes);
                 for (Integer allocId : entry.getValue()) {
                     if (!currentRes.contains(allocId)) {
-                        System.err.println("Error!");
-                        System.err.println("\n\n\n\n\n\n\n\n\n");
+                        System.err.printf("Error %d!\n", id);
+                        break;
                         // System.exit(-1);
                     }
                     assert currentRes.contains(allocId);
@@ -181,11 +187,10 @@ public class RunDataset {
         printResult(((Integer)testId).toString(), runSingleData(testId));
     }
 
-    public void testAllTransformerWithAllData() {
+    public void testAllTransformerWithAllData(int begin, int datasetSize) {
         Integer ans[] = new Integer[allTransformer.size() + 1];
         List<Integer[]> allRes = new ArrayList<>();
         for (int i = 0; i < ans.length; ++i) ans[i] = 0;
-        int begin = 1;
         for (int i = 1; i < begin; ++i) {
             allRes.add(new Integer[1]);
         }
@@ -203,11 +208,11 @@ public class RunDataset {
 
     public static void main(String[] args) {
         ArrayList<Class<? extends AbstractPTATransformer>> allList = new ArrayList<>();
-        //allList.add(BasicFieldCFLTransformer.class);
+        allList.add(BasicFieldCFLTransformer.class);
         allList.add(CloneFieldCFLTransformer.class);
         allList.add(InterProcedureFieldAndersonMemFixTrans.class);
         RunDataset datasetRunner = new RunDataset(allList);
-        datasetRunner.testAllTransformerWithAllData();
+        datasetRunner.testAllTransformerWithAllData(46, 60);
     }
 }
 // 21 26

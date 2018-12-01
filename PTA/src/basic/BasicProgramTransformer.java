@@ -43,7 +43,9 @@ public class BasicProgramTransformer extends LogPTATransformer {
                             queries.put(queryId, var);
                         }
                     }
-                    if ((current instanceof DefinitionStmt) && (((DefinitionStmt) current).getRightOp() instanceof NewExpr)) {
+                    if ((current instanceof DefinitionStmt) && ((((DefinitionStmt) current).getRightOp() instanceof NewExpr) ||
+                            (((DefinitionStmt) current).getRightOp() instanceof NewArrayExpr) ||
+                            (((DefinitionStmt) current).getRightOp() instanceof NewMultiArrayExpr))) {
                         allocs.add(allocId);
                         allocId = 0;
                     }

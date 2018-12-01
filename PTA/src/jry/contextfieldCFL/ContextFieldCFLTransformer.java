@@ -110,7 +110,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         buildGraph();
         graphBuilder.doAnalysis(CFLLib.ContextCFL, CFLLib.ContextCFLName);
         for (Map.Entry<Integer, Local> entry : queries.entrySet()) {
-            result.put(entry.getKey(), graphBuilder.getPointTo(findRoot(new LocalRef(entry.getValue())), 0));
+            result.put(entry.getKey(), graphBuilder.getPointTo(findRoot(new LocalRef(entry.getValue())), 2));
         }
     }
 
@@ -138,6 +138,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     }
 
     void link(LocalRef u, LocalRef v) {
+        //System.out.println(u + " = " + v);
         u = findRoot(u);
         v = findRoot(v);
         if (u == v) return;
@@ -156,25 +157,38 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                 Object v = edge.v;
                 if (u instanceof AllocRef) continue;
                 if (v instanceof AllocRef) continue;
+                if (edge.callPosition != null) continue;
                 Set<LocalRef> uLocalRef = usedLocalRef.get(u);
                 Set<LocalRef> vLocalRef = usedLocalRef.get(v);
                 //System.out.println("[BuildGraph] " + entry.getKey() + " " + edge);
                 if (edge.type == 0) {
-                    // v = u
                     for (LocalRef localRef : uLocalRef) {
                         LocalRef localRefLeft = new LocalRef(v, localRef.trace);
                         assert vLocalRef.contains(localRefLeft);
-                        // System.out.println(localRefLeft + " -> " + localRef);
                         link(localRefLeft, localRef);
+                    }
+                } if (edge.type == 1){
+                    //v.x = u
+                    for (LocalRef localRef : uLocalRef) {
+                        LocalRef localRefLeft = new LocalRef(v, edge.sField);
+                        assert vLocalRef.contains(localRefLeft);
+                        link(localRefLeft, localRef);
+                    }
+                } else if (edge.type == 2) {
+                    // v = u.x
+                    for (LocalRef localRef : vLocalRef) {
+                        LocalRef localRefRight = new LocalRef(u, edge.sField);
+                        assert uLocalRef.contains(localRefRight);
+                        link(localRefRight, localRef);
                     }
                 }
             }
         }
-        /*for (Map.Entry<Object, LinkedList<AssignEdge>> entry : assignGraph.entrySet()) {
+        for (Map.Entry<Object, LinkedList<AssignEdge>> entry : assignGraph.entrySet()) {
             for (LocalRef localRef : usedLocalRef.get(entry.getKey())) {
-                System.out.println(localRef + " , " + findRoot(localRef));
+                //System.out.println(localRef + " , " + findRoot(localRef));
             }
-        }*/
+        }
 
     }
 
@@ -216,13 +230,13 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         for (Map.Entry<AllocRef, Integer> entry : allocMap.entrySet()) {
             graphBuilder.assignAllocId(findRoot(new LocalRef(entry.getKey())), entry.getValue());
         }
-        graphBuilder.addAllSelf(0);
+        graphBuilder.addAllSelf(2);
     }
 
     void getAllUsedLocalRef(){
         while (!localRefQueue.isEmpty()) {
             LocalRef fir = localRefQueue.remove();
-            System.out.println("[NewLocalRef] " + fir);
+            //System.out.println("[NewLocalRef] " + fir);
             Object root = fir.root;
             for (Object v : localRefFlowGraph.get(root)) {
                 tryInsertNewLocalRef(new LocalRef(v, fir.trace));
@@ -249,6 +263,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                     if (right instanceof ThisRef) {
                         Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                         addAssignEdge(left, base, location, 1);
+                        addAssignEdge(base, left, location, -1);
                     }
                 }
             }

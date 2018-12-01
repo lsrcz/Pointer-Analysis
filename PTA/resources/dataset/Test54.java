@@ -19,7 +19,7 @@ class Test54A {
 }
 
 class Test54B extends Test54A {}
-class C extends Test54A {}
+class Test54C extends Test54A {}
 
 public class Test54 {
     public static void main(String[] args) {
@@ -28,7 +28,7 @@ public class Test54 {
         Benchmark.alloc(2);
         Test54A a1 = new Test54B();
         Benchmark.alloc(3);
-        Test54A a2 = new C();
+        Test54A a2 = new Test54C();
         Test54A t = a.func1(a1, a2);
         a1 = a2;
         Test54A t1 = a.func1(a1, a2);

@@ -109,7 +109,7 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);
-            System.out.println(sMethod.getActiveBody());
+            //System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 // System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
@@ -131,14 +131,15 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                         }
                     }
                 } else if (unit instanceof DefinitionStmt) {
-                    System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
+                    //System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
                     Object right = getValue(((DefinitionStmt) unit).getRightOp());
-                    System.out.println(right.getClass() + " " + right);
+                    //System.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
-                    System.out.println(left.getClass() + " " + left);
+                    //System.out.println(left.getClass() + " " + left);
                     if (right instanceof NewExpr) {
                         graphBuilder.addEdge(allocRef, left, 1, 0);
                         graphBuilder.addEdge(left, allocRef, -1, 0);
+                        allocRef = new AllocRef(0);
                     } else if ((right instanceof Local) || (right instanceof SootField)) {
                         if ((left instanceof Local) || (left instanceof SootField)) {
                             graphBuilder.addEdge(right, left, 3, 0);

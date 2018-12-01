@@ -168,6 +168,8 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                     if (right instanceof NewExpr) {
                         addAssignEdge(left, allocRef, null);
+                        allocRef = new AllocRef(0);
+                        
                     } else if (right instanceof Local) {
                         if (left instanceof Local) {
                             addAssignEdge(left, right, null);

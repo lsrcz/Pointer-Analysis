@@ -242,6 +242,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
                         nodeList.add(leftm);
                         graphBuilder.addEdge(allocRef, leftm, 1, 0);
                         graphBuilder.addEdge(leftm, allocRef, -1, 0);
+                        allocRef = new AllocRef(0);
                     } else if ((right instanceof Local) || (right instanceof SootFieldRef)) {
                         if ((left instanceof Local) || (left instanceof SootFieldRef)) {
                             /*System.out.println("-----");

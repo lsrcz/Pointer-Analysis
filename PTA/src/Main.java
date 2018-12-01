@@ -12,9 +12,10 @@ import soot.Transform;
 import soot.toolkits.scalar.ArraySparseSet;
 import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
+import jry.clonefieldCFL.CloneFieldCFLTransformer;
 
 public class Main {
-    static AbstractPTATransformer trans[] = {new BasicProgramTransformer(), new InterProcedureFieldAndersonMemFixTrans()};
+    static AbstractPTATransformer trans[] = {new BasicProgramTransformer(), new CloneFieldCFLTransformer(), new InterProcedureFieldAndersonMemFixTrans()};
     //static ExecutorService executor = Executors.newFixedThreadPool(4);
     static String dir, className;
 
@@ -86,9 +87,10 @@ public class Main {
     static Map<Integer, ArraySparseSet<Integer>> runTransformer(int i) {
         AbstractPTATransformer ipat = trans[i];
         String optimized = "./sootOutput";
-        String classpath = optimized
+        String classpath = optimized + File.pathSeparator + dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
+        System.out.println(classpath);
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
         soot.Main.main(new String[]{
@@ -114,20 +116,24 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        //dir = args[0];
-        dir = "./resources";
-        //className = args[1];
-        className = "dataset.Test60";
+        dir = args[0];
+        //dir = "./resources";
+        className = args[1];
+        //className = "dataset.Test60";
         ResultOperator resultOp = null;
         optimizeProgram(args);
         for (int i = 0; i < trans.length; i++) {
-            Map<Integer, ArraySparseSet<Integer>> x = runTransformer(i);
-            if (resultOp == null) {
-                resultOp = new ResultOperator(x);
-            } else {
-                resultOp.Intersect(x);
+            try {
+                Map<Integer, ArraySparseSet<Integer>> x = runTransformer(i);
+                if (resultOp == null) {
+                    resultOp = new ResultOperator(x);
+                } else {
+                    resultOp.Intersect(x);
+                }
+                printAnswer(resultOp.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            printAnswer(resultOp.toString());
         }
         /*
         ArrayList<Future<Map<Integer, ArraySparseSet<Integer>>>> futures = new ArrayList<>();

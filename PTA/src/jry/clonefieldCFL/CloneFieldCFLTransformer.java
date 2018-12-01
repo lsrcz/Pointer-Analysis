@@ -1,6 +1,7 @@
 package jry.clonefieldCFL;
 
 import jry.evaluation.AbstractPTATransformer;
+import jry.evaluation.LogPTATransformer;
 import jry.util.*;
 import soot.*;
 import soot.jimple.*;
@@ -55,7 +56,7 @@ class SootObjectWithCallsite {
     }
 }
 
-public class CloneFieldCFLTransformer extends AbstractPTATransformer {
+public class CloneFieldCFLTransformer extends LogPTATransformer {
     int depth = 2;
     Set<SootObjectWithCallsite> nodeList = new HashSet<>();
     SootMethod DUMMY_METHOD;
@@ -322,7 +323,7 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
     }
 
     @Override
-    protected void internalTransform(String s, Map<String, String> map) {
+    protected void myInternalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
         DUMMY_METHOD = mainMethod;
         callStack.addFirst(new Pair<>(mainMethod, -1));

@@ -103,7 +103,7 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
         if (isVisited.contains(sMethod)) {
             return;
         }
-        System.out.println("[New Method] " + sMethod);
+        // System.out.println("[New Method] " + sMethod);
         isVisited.add(sMethod);
         Set<SootMethod> callMethods = new HashSet<SootMethod>();
         if (sMethod.hasActiveBody()) {
@@ -118,7 +118,6 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                         allocId = ((IntConstant) ie.getArgs().get(0)).value;
                     } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
                         Local var = (Local) getValue(ie.getArgs().get(1));
-                        System.out.println("fa " + var);
                         int id = ((IntConstant) ie.getArgs().get(0)).value;
                         queries.put(id, var);
                     } else {
@@ -137,7 +136,7 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                     if (right instanceof NewExpr || right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
                         totalNew += 1;
                         allocRef = new AllocRef(totalNew);
-                        System.out.println("assign" + left + " " + allocId);
+                        // System.out.println("assign" + left + " " + allocId);
                         graphBuilder.assignAllocId(allocRef, allocId);
                         graphBuilder.addEdge(allocRef, left, 1, 0);
                         graphBuilder.addEdge(left, allocRef, -1, 0);

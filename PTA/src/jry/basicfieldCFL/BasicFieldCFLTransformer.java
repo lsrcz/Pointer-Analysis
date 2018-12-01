@@ -6,6 +6,7 @@ import jry.util.*;
 import soot.*;
 import soot.jimple.*;
 import soot.toolkits.scalar.ArraySparseSet;
+import soot.util.Switch;
 import vasco.callgraph.CallGraphTransformer;
 import soot.util.Chain;
 
@@ -24,11 +25,22 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
         return result;
     }
 
+    class FakeFieldRef {
+        Local base;
+        Object key;
+        public FakeFieldRef(Local _base, Object _key) {
+            base = _base;
+            key = _key;
+        }
+    }
+
     private Object getValue(Value var) {
         if (var instanceof ArrayRef) {
-            return ((ArrayRef) var).getBase();
+            return new FakeFieldRef((Local)((ArrayRef) var).getBase(), "fake");
         } else if (var instanceof StaticFieldRef) {
             return ((StaticFieldRef) var).getField();
+        } else if (var instanceof InstanceFieldRef) {
+            return new FakeFieldRef((Local)((InstanceFieldRef) var).getBase(), ((InstanceFieldRef) var).getField());
         }
         return var;
     }
@@ -64,10 +76,10 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                         if ((left instanceof Local) || (left instanceof SootField)) {
                             graphBuilder.addEdge(base, left, 3, 0);
                             graphBuilder.addEdge(left, base, -3, 0);
-                        } else if (left instanceof InstanceFieldRef) {
-                            Local LeftBase = (Local) (((InstanceFieldRef) left).getBase());
-                            graphBuilder.addEdge(base, LeftBase, 4, ((InstanceFieldRef) left).getField());
-                            graphBuilder.addEdge(LeftBase, base, -5, ((InstanceFieldRef) left).getField());
+                        } else if (left instanceof FakeFieldRef) {
+                            Local LeftBase = (((FakeFieldRef) left).base);
+                            graphBuilder.addEdge(base, LeftBase, 4, ((FakeFieldRef) left).key);
+                            graphBuilder.addEdge(LeftBase, base, -5, ((FakeFieldRef) left).key);
                         } else {
                             assert false;
                         }
@@ -103,15 +115,15 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
         if (isVisited.contains(sMethod)) {
             return;
         }
-        // System.out.println("[New Method] " + sMethod);
+        //System.out.println("[New Method] " + sMethod);
         isVisited.add(sMethod);
         Set<SootMethod> callMethods = new HashSet<SootMethod>();
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);
-            System.out.println(sMethod.getActiveBody());
+            //System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
-                // System.out.println("  [Unit] " + unit + " " + unit.getClass());
+                //System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
@@ -145,17 +157,18 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                         if ((left instanceof Local) || (left instanceof SootField)) {
                             graphBuilder.addEdge(right, left, 3, 0);
                             graphBuilder.addEdge(left, right, -3, 0);
-                        } else if (left instanceof InstanceFieldRef) {
-                            Local base = (Local) (((InstanceFieldRef) left).getBase());
-                            graphBuilder.addEdge(right, base, 4, ((InstanceFieldRef) left).getField());
-                            graphBuilder.addEdge(base, right, -5, ((InstanceFieldRef) left).getField());
+                        } else if (left instanceof FakeFieldRef) {
+                            Local base = (Local) ((FakeFieldRef) left).base;
+                            graphBuilder.addEdge(right, base, 4, ((FakeFieldRef) left).key);
+                            graphBuilder.addEdge(base, right, -5, ((FakeFieldRef) left).key);
                         } else {
                             assert false;
                         }
-                    } else if (right instanceof InstanceFieldRef) {
-                        Local base = (Local) ((InstanceFieldRef) right).getBase();
-                        graphBuilder.addEdge(base, left, -4, ((InstanceFieldRef) right).getField());
-                        graphBuilder.addEdge(left, base, 5, ((InstanceFieldRef) right).getField());
+                    } else if (right instanceof FakeFieldRef) {
+                        Local base = (Local) ((FakeFieldRef) right).base;
+                        //System.out.println(base + " " + ((InstanceFieldRef) right).getField());
+                        graphBuilder.addEdge(base, left, -4, ((FakeFieldRef) right).key);
+                        graphBuilder.addEdge(left, base, 5, ((FakeFieldRef) right).key);
                     } else if (right instanceof ParameterRef) {
                     } else if (right instanceof InvokeExpr){
                         InvokeExpr ie = (InvokeExpr)right;
@@ -168,9 +181,9 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                                 if ((left instanceof Local) || (left instanceof SootField)) {
                                     graphBuilder.addEdge(returnObj, left, 3, 0);
                                     graphBuilder.addEdge(left, returnObj, -3, 0);
-                                } else if (left instanceof InstanceFieldRef) {
-                                    graphBuilder.addEdge(((InstanceFieldRef) left).getBase(), returnObj, 4, ((InstanceFieldRef) left).getField());
-                                    graphBuilder.addEdge(returnObj, ((InstanceFieldRef) left).getBase(), -5, ((InstanceFieldRef) left).getField());
+                                } else if (left instanceof FakeFieldRef) {
+                                    graphBuilder.addEdge(((FakeFieldRef) left).base, returnObj, 4, ((FakeFieldRef) left).key);
+                                    graphBuilder.addEdge(returnObj, ((FakeFieldRef) left).base, -5, ((FakeFieldRef) left).key);
                                 }
                             }
                         }

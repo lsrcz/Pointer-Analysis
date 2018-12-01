@@ -109,16 +109,13 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);
-            System.out.println(sMethod.getActiveBody());
+            //System.out.println(sMethod.getActiveBody());
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 // System.out.println("  [Unit] " + unit + " " + unit.getClass());
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
                         allocId = ((IntConstant) ie.getArgs().get(0)).value;
-                        totalNew += 1;
-                        allocRef = new AllocRef(totalNew);
-                        graphBuilder.assignAllocId(allocRef, allocId);
                     } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
                         Local var = (Local) ie.getArgs().get(1);
                         int id = ((IntConstant) ie.getArgs().get(0)).value;
@@ -131,14 +128,18 @@ public class BasicFieldCFLTransformer extends LogPTATransformer {
                         }
                     }
                 } else if (unit instanceof DefinitionStmt) {
-                    System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
+                    //System.out.println("[DefinitionStmt] " + unit + " " + unit.getClass());
                     Object right = getValue(((DefinitionStmt) unit).getRightOp());
-                    System.out.println(right.getClass() + " " + right);
+                    //System.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
-                    System.out.println(left.getClass() + " " + left);
+                    //System.out.println(left.getClass() + " " + left);
                     if (right instanceof NewExpr) {
+                        totalNew += 1;
+                        allocRef = new AllocRef(totalNew);
+                        graphBuilder.assignAllocId(allocRef, allocId);
                         graphBuilder.addEdge(allocRef, left, 1, 0);
                         graphBuilder.addEdge(left, allocRef, -1, 0);
+                        allocId = 0;
                     } else if ((right instanceof Local) || (right instanceof SootField)) {
                         if ((left instanceof Local) || (left instanceof SootField)) {
                             graphBuilder.addEdge(right, left, 3, 0);

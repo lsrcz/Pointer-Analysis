@@ -4,18 +4,20 @@ import java.util.concurrent.*;
 
 import Anderson.InterProcedureFieldAndersonMemFixTrans;
 import jry.evaluation.AbstractPTATransformer;
+import jry.evaluation.LogPTATransformer;
 import jry.util.ResultOperator;
 import basic.BasicProgramTransformer;
 
 import soot.PackManager;
 import soot.Transform;
 import soot.toolkits.scalar.ArraySparseSet;
+import sun.rmi.runtime.Log;
 import vasco.VascoClearer;
 import vasco.callgraph.CallGraphTransformer;
 import jry.clonefieldCFL.CloneFieldCFLTransformer;
 
 public class Main {
-    static AbstractPTATransformer trans[] = {new BasicProgramTransformer(), new CloneFieldCFLTransformer(), new InterProcedureFieldAndersonMemFixTrans()};
+    static LogPTATransformer trans[] = {new BasicProgramTransformer(), new CloneFieldCFLTransformer(), new InterProcedureFieldAndersonMemFixTrans()};
     //static ExecutorService executor = Executors.newFixedThreadPool(4);
     static String dir, className;
 
@@ -84,18 +86,20 @@ public class Main {
     }
     */
 
-    static Map<Integer, ArraySparseSet<Integer>> runTransformer(int i) {
-        AbstractPTATransformer ipat = trans[i];
+    static void runTransformers() {
         String optimized = "./sootOutput";
         String classpath = optimized + File.pathSeparator + dir
                 + File.pathSeparator + dir + File.separator + "rt.jar"
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
-        PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa", ipat));
+        for (int i = 0; i < trans.length; i++) {
+            PackManager.v().getPack("wjtp").add(new Transform("wjtp.ipa" + (new Integer(i)).toString(), trans[i]));
+        }
         soot.Main.main(new String[]{
                 "-w",
-                "-app", "-pp",
+                "-app",
+                "-src-prec", "J",
                 "-keep-line-number",
                 "-keep-bytecode-offset",
                 "-p", "cg", "implicit-entry:false",
@@ -104,7 +108,7 @@ public class Main {
                 "-p", "cg", "safe-forname",
                 "-p", "cg", "safe-newinstance",
                 "-p", "wjtp.fcpa", "enabled:true",
-                "-p", "wjtp.ipa", "enabled:true",
+                //"-p", "wjtp.ipa", "enabled:true",
                 "-soot-class-path", classpath,
                 "-main-class", className,
                 "-f", "J",
@@ -112,19 +116,22 @@ public class Main {
         });
         soot.G.reset();
         VascoClearer.clear();
-        return ipat.getResult();
     }
 
     public static void main(String[] args) {
         dir = args[0];
         //dir = "./resources";
         className = args[1];
-        //className = "dataset.Test60";
+        //className = "dataset.Test24";
         ResultOperator resultOp = null;
         optimizeProgram(args);
+        runTransformers();
         for (int i = 0; i < trans.length; i++) {
             try {
-                Map<Integer, ArraySparseSet<Integer>> x = runTransformer(i);
+                if (trans[i].fail) {
+                    continue;
+                }
+                Map<Integer, ArraySparseSet<Integer>> x = trans[i].getResult();
                 if (resultOp == null) {
                     resultOp = new ResultOperator(x);
                 } else {

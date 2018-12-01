@@ -22,7 +22,7 @@
 hs_err_pid*
 
 PTA/.idea/
-*/.DS_Store
+*.DS_Store
 
 *.jar
 !PTA/soot-trunk.jar

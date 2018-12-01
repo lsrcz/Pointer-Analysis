@@ -2,6 +2,7 @@ package Anderson;
 
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.internal.JNewArrayExpr;
 import soot.jimple.internal.JimpleLocal;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.FlowSet;
@@ -297,6 +298,24 @@ public class InterProcedureFieldAndersonMemFix extends ForwardInterProceduralAna
             }
         }
         return ret;
+    }
+
+    @Override
+    public void initEntryPoints() {
+        for (SootMethod method : programRepresentation().getEntryPoints()) {
+            List<Local> s = method.getActiveBody().getParameterLocals();
+            Map<Object, FlowSet<AnyNewExpr>> entryValue = boundaryValue(method);
+
+            for (int i = 0; i < s.size(); ++i) {
+                NewArrayExpr nae = new JNewArrayExpr(s.get(i).getType(), IntConstant.v(100));
+                Local param = s.get(i);
+                Map<Object, FlowSet<AnyNewExpr>> newEntryValue = this.copy(entryValue);
+                assign(param, nae, entryValue, newEntryValue);
+                entryValue = newEntryValue;
+            }
+
+            initContext(method, entryValue);
+        }
     }
 
     public ProgramRepresentation<SootMethod, Unit> programRepresentation() {

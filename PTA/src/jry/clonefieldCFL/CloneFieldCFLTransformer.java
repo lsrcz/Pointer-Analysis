@@ -1,9 +1,11 @@
 package jry.clonefieldCFL;
 
 import jry.evaluation.AbstractPTATransformer;
+import jry.evaluation.LogPTATransformer;
 import jry.util.*;
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.internal.JNewArrayExpr;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.Pair;
 import vasco.callgraph.CallGraphTransformer;
@@ -55,7 +57,7 @@ class SootObjectWithCallsite {
     }
 }
 
-public class CloneFieldCFLTransformer extends AbstractPTATransformer {
+public class CloneFieldCFLTransformer extends LogPTATransformer {
     int depth = 2;
     Set<SootObjectWithCallsite> nodeList = new HashSet<>();
     SootMethod DUMMY_METHOD;
@@ -322,10 +324,24 @@ public class CloneFieldCFLTransformer extends AbstractPTATransformer {
     }
 
     @Override
-    protected void internalTransform(String s, Map<String, String> map) {
+    protected void myInternalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
         DUMMY_METHOD = mainMethod;
         callStack.addFirst(new Pair<>(mainMethod, -1));
+
+        callStack.addFirst(new Pair<>(mainMethod, -1));
+        List<Local> pa = mainMethod.getActiveBody().getParameterLocals();
+        for (int i = 0; i < pa.size(); ++i) {
+            SootObjectWithCallsite para = new SootObjectWithCallsite(pa.get(i), mainMethod, depth, callStack);
+            totalNew += 1;
+            NewArrayExpr nae = new JNewArrayExpr(pa.get(i).getType(), IntConstant.v(100));
+            AllocRef allocRef = new AllocRef(totalNew);
+            graphBuilder.assignAllocId(allocRef, 0);
+            graphBuilder.addEdge(allocRef, para, 1, 0);
+            graphBuilder.addEdge(para, allocRef, -1, 0);
+        }
+        callStack.removeFirst();
+
         dfsMethod(mainMethod);
         callStack.removeFirst();
         graphBuilder.addAllSelf(3);

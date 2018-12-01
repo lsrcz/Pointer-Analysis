@@ -35,7 +35,7 @@ public class Main {
         };
         System.out.println(classPath);
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.fcpa", new CallGraphTransformer()));
-        BasicFieldCFLTransformer fCFL = new BasicFieldCFLTransformer();
+        ContextFieldCFLTransformer fCFL = new ContextFieldCFLTransformer();
         PackManager.v().getPack("wjtp").add(new Transform("wjtp.mypta", fCFL));
         soot.Main.main(sootArgs);
         ResultOperator result = new ResultOperator(fCFL.result);

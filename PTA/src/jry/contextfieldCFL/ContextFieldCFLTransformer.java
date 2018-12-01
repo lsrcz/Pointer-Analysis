@@ -3,6 +3,7 @@ package jry.contextfieldCFL;
 import jry.evaluation.LogPTATransformer;
 import jry.util.AllocRef;
 import jry.util.CFLGraphBuilder;
+import jry.util.CFLLib;
 import jry.util.CallGraphGenerator;
 import soot.*;
 import soot.jimple.*;
@@ -15,7 +16,7 @@ import java.util.*;
 
 class LocalRef{
     public Object trace;
-    public Local root;
+    public Object root;
 
     @Override
     public int hashCode() {
@@ -33,12 +34,12 @@ class LocalRef{
         return root.equals(((LocalRef)obj).root) &&  trace.equals(((LocalRef)obj).trace);
     }
 
-    public LocalRef(Local _root) {
+    public LocalRef(Object _root) {
         root = _root;
         trace = -1;
     }
 
-    public LocalRef(Local _root, SootField _trace) {
+    public LocalRef(Object _root, Object _trace) {
         root = _root;
         trace = _trace;
     }
@@ -65,17 +66,18 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         int type;
         SootField sField;
         Unit callPosition;
-        public AssignEdge(Object _local, int _type, SootField _sField, Unit _callPosition) {
-            v = _local; type = _type; sField = _sField; callPosition = _callPosition;
+        int callType;
+        public AssignEdge(Object _local, int _type, SootField _sField, Unit _callPosition, int _callType) {
+            v = _local; type = _type; sField = _sField; callPosition = _callPosition; callType = _callType;
         }
     }
 
     Map<Object, LinkedList<AssignEdge>> assignGraph = new HashMap<>();
     Map<Object, Set<LocalRef>> usedLocalRef = new HashMap<>();
     Queue<LocalRef> localRefQueue = new LinkedList<>();
+    Map<Object, Set<Object>> localRefFlowGraph = new HashMap<Object, Set<Object>>();
 
-    public ContextFieldCFLTransformer(int _depth) {
-        depth = _depth;
+    public ContextFieldCFLTransformer() {
     }
 
     @Override
@@ -87,6 +89,72 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     protected void myInternalTransform(String s, Map<String, String> map) {
         SootMethod mainMethod = Scene.v().getMainMethod();
         generateAssignGraph(mainMethod);
+        getAllUsedLocalRef();
+        buildGraph();
+        graphBuilder.doAnalysis(CFLLib.ContextCFL, CFLLib.ContextCFLName);
+        for (Map.Entry<Integer, Local> entry : queries.entrySet()) {
+            result.put(entry.getKey(), graphBuilder.getPointTo(new LocalRef(entry.getValue()), 0));
+        }
+    }
+
+    void tryInsertNewLocalRef(LocalRef localRef) {
+        Object root = localRef.root;
+        if (usedLocalRef.get(root).contains(localRef)) return;
+        usedLocalRef.get(root).add(localRef);
+        localRefQueue.add(localRef);
+    }
+
+    void addinGraph(LocalRef u, LocalRef v, Unit callPosition, int callType) {
+        if (callPosition == null) {
+            graphBuilder.addEdge(u, v, 0, 0);
+        } else {
+            graphBuilder.addEdge(u, v, callType, callPosition);
+        }
+    }
+
+    void buildGraph() {
+        assert usedLocalRef.size() == assignGraph.size();
+        for (Map.Entry<Object, LinkedList<AssignEdge>> entry : assignGraph.entrySet()) {
+            for (AssignEdge edge : entry.getValue()) {
+                Object u = entry.getKey();
+                Object v = edge.v;
+                Set<LocalRef> uLocalRef = usedLocalRef.get(u);
+                Set<LocalRef> vLocalRef = usedLocalRef.get(v);
+                if (edge.type == 0) {
+                    // v = u
+                    for (LocalRef localRef : uLocalRef) {
+                        LocalRef localRefLeft = new LocalRef(v, localRef.trace);
+                        assert vLocalRef.contains(localRefLeft);
+                        addinGraph(localRefLeft, localRef, edge.callPosition, edge.callType);
+                    }
+                } else if (edge.type == 1){
+                    //v.x = u
+                    for (LocalRef localRef : uLocalRef) {
+                        LocalRef localRefLeft = new LocalRef(v, edge.sField);
+                        assert vLocalRef.contains(localRefLeft);
+                        addinGraph(localRefLeft, localRef, edge.callPosition, edge.callType);
+                    }
+                } else if (edge.type == 2) {
+                    // v = u.x
+                    for (LocalRef localRef : vLocalRef) {
+                        LocalRef localRefRight = new LocalRef(u, edge.sField);
+                        assert uLocalRef.contains(localRefRight);
+                        addinGraph(localRef, localRefRight, edge.callPosition, edge.callType);
+                    }
+
+                } else assert false;
+            }
+        }
+    }
+
+    void getAllUsedLocalRef(){
+        while (!localRefQueue.isEmpty()) {
+            LocalRef fir = localRefQueue.remove();
+            Object root = fir.root;
+            for (Object v : localRefFlowGraph.get(root)) {
+                tryInsertNewLocalRef(new LocalRef(v, fir.trace));
+            }
+        }
     }
 
     private Object getValue(Value var) {
@@ -98,8 +166,44 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         return var;
     }
 
-    void assignGraphResolveCall(SootMethod method, InvokeExpr ie) {
+    void assignThis(SootMethod sMethod, Local base, Unit location) {
+        if (sMethod.hasActiveBody()) {
+            for (Unit unit : sMethod.getActiveBody().getUnits()) {
+                if (unit instanceof DefinitionStmt) {
+                    Value right = ((DefinitionStmt) unit).getRightOp();
+                    if (right instanceof ThisRef) {
+                        Local left = (Local) ((DefinitionStmt) unit).getLeftOp();
+                        addAssignEdge(left, base, location, 1);
+                    }
+                }
+            }
+        }
+    }
 
+    void assignPar(SootMethod sMethod, List<Value> args, Unit location) {
+        if (sMethod.hasActiveBody()) {
+            for (Unit unit : sMethod.getActiveBody().getUnits()) {
+                if (unit instanceof  DefinitionStmt) {
+                    if (((DefinitionStmt) unit).getRightOp() instanceof ParameterRef) {
+                        ParameterRef right = (ParameterRef)((DefinitionStmt) unit).getRightOp();
+                        // System.out.println("[FindPar] " + right);
+                        Local left = (Local)((DefinitionStmt) unit).getLeftOp();
+                        int where = right.getIndex();
+                        if (args.get(where) instanceof Local) {
+                            addAssignEdge(left, args.get(where), location, 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    void assignGraphResolveCall(SootMethod sMethod, InvokeExpr ie, Unit location) {
+        assert ie instanceof InstanceInvokeExpr;
+        InstanceInvokeExpr iie = (InstanceInvokeExpr) ie;
+        Local base = (Local) iie.getBase();
+        assignThis(sMethod, base, location);
+        assignPar(sMethod, ie.getArgs(), location);
     }
 
     void initNode(Object u) {
@@ -108,6 +212,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         }
         if (!usedLocalRef.containsKey(u)) {
             usedLocalRef.put(u, new HashSet<>());
+            tryInsertNewLocalRef(new LocalRef(u));
         }
     }
 
@@ -134,8 +239,6 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
                     if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
                         allocId = ((IntConstant) ie.getArgs().get(0)).value;
-                        totalNew += 1;
-                        allocRef = new AllocRef(totalNew);
                     } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
                         Local var = (Local) ie.getArgs().get(1);
                         int id = ((IntConstant) ie.getArgs().get(0)).value;
@@ -143,7 +246,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                     } else {
                         List<SootMethod> nextMethods = CallGraphGenerator.resolveTarget(unit);
                         for (SootMethod nextMethod : nextMethods) {
-                            assignGraphResolveCall(nextMethod, ie);
+                            assignGraphResolveCall(nextMethod, ie, unit);
                             callMethods.add(nextMethod);
                         }
                     }
@@ -153,39 +256,43 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                     // System.out.println(right.getClass() + " " + right);
                     Object left = getValue(((DefinitionStmt) unit).getLeftOp());
                     if (right instanceof NewExpr || right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
-                        addAssignEdge(left, allocRef, null);
-                        if (right instanceof NewExpr) {
+                        addAssignEdge(left, allocRef, null, 0);
+                        totalNew += 1;
+                        allocRef = new AllocRef(totalNew);
+                        graphBuilder.assignAllocId(new LocalRef(allocRef), allocId);
+                        /*if (right instanceof NewExpr) {
                             SootClass baseClass = ((NewExpr) right).getBaseType().getSootClass();
-                            List<LocalRef> localRefs = openNew((Local)left, baseClass);
-                            localRefQueue.addAll(localRefs);
-                            usedLocalRef.get(allocRef).addAll(localRefs);
-                        }
-                        allocRef = new AllocRef(0);
+                            List<LocalRef> localRefs = openNew(allocRef, baseClass);
+                            for (LocalRef localRef : localRefs) {
+                                tryInsertNewLocalRef(localRef);
+                            }
+                        }*/
+                        allocId = 0;
                     } else if (right instanceof Local) {
                         if (left instanceof Local) {
-                            addAssignEdge(left, right, null);
+                            addAssignEdge(left, right, null, 0);
                         } else if (left instanceof InstanceFieldRef) {
                             Local base = (Local) (((InstanceFieldRef) left).getBase());
-                            addAssignEdge(base, ((InstanceFieldRef) left).getField(), right, null);
+                            addAssignEdge(base, ((InstanceFieldRef) left).getField(), right, null, 0);
                         } else {
                             assert false;
                         }
                     } else if (right instanceof InstanceFieldRef) {
                         Local base = (Local) ((InstanceFieldRef) right).getBase();
-                        addAssignEdge(left, base, ((InstanceFieldRef) right).getField(), null);
+                        addAssignEdge(left, base, ((InstanceFieldRef) right).getField(), null, 0);
                     } else if (right instanceof ParameterRef) {
                     } else if (right instanceof InvokeExpr){
                         InvokeExpr ie = (InvokeExpr)right;
                         List<SootMethod> nextMethods = CallGraphGenerator.resolveTarget(unit);
                         for (SootMethod nextMethod : nextMethods) {
                             callMethods.add(nextMethod);
-                            assignGraphResolveCall(nextMethod, ie);
+                            assignGraphResolveCall(nextMethod, ie, unit);
                             List<Local> returnObjs = getReturnObj(nextMethod);
                             for (Local returnObj: returnObjs) {
                                 if (left instanceof Local) {
-                                    addAssignEdge(left, returnObj, unit);
+                                    addAssignEdge(left, returnObj, unit, -1);
                                 } else if (left instanceof InstanceFieldRef) {
-                                    addAssignEdge(((InstanceFieldRef) left).getBase(), returnObj, ((InstanceFieldRef) left).getField(), unit);
+                                    addAssignEdge(((InstanceFieldRef) left).getBase(), returnObj, ((InstanceFieldRef) left).getField(), unit, -1);
                                 }
                             }
                         }
@@ -211,7 +318,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         return result;
     }
 
-    List<LocalRef> openNew(Local local, SootClass sClass) {
+    List<LocalRef> openNew(Object local, SootClass sClass) {
         List<LocalRef> result = new LinkedList<>();
         LocalRef base = new LocalRef(local);
         for (SootField sField : getAllFields(sClass)) {
@@ -220,21 +327,26 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         return result;
     }
 
-    void addAssignEdge(Object u, Object v, Unit callPosition) {
+    void addAssignEdge(Object u, Object v, Unit callPosition, int callType) {
         initNode(u);
         initNode(v);
-        assignGraph.get(v).add(new AssignEdge(u, 0, null, callPosition));
+        assignGraph.get(v).add(new AssignEdge(u, 0, null, callPosition, callType));
+        localRefFlowGraph.get(v).add(u);
+        localRefFlowGraph.get(u).add(v);
     }
 
-    void addAssignEdge(Local u, SootField sField, Object v, Unit callPosition) {
+    void addAssignEdge(Local u, SootField sField, Object v, Unit callPosition, int callType) {
         initNode(u);
         initNode(v);
-        assignGraph.get(v).add(new AssignEdge(v, 1, sField, callPosition));
+        tryInsertNewLocalRef(new LocalRef(u, sField));
+        assignGraph.get(v).add(new AssignEdge(v, 1, sField, callPosition, callType));
     }
 
-    void addAssignEdge(Object u, Local v, SootField sField, Unit callPosition) {
+    void addAssignEdge(Object u, Local v, SootField sField, Unit callPosition, int callType) {
         initNode(u);
         initNode(v);
-        assignGraph.get(v).add(new AssignEdge(v, 2, sField, callPosition));
+        tryInsertNewLocalRef(new LocalRef(v, sField));
+        assignGraph.get(v).add(new AssignEdge(v, 2, sField, callPosition, callType));
+
     }
 }

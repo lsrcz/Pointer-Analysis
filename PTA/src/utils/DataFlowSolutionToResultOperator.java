@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class DataFlowSolutionToResultOperator {
     private Map<InvokeStmt, Pair<Local, Integer>> queries;
-    private Map<NewExpr, Integer> allocs;
+    private Map<AnyNewExpr, Integer> allocs;
 
     public DataFlowSolutionToResultOperator() {
         queries = new HashMap<>();
@@ -39,8 +39,8 @@ public class DataFlowSolutionToResultOperator {
                         }
                     }
                     if (u instanceof DefinitionStmt) {
-                        if (((DefinitionStmt)u).getRightOp() instanceof NewExpr) {
-                            allocs.put((NewExpr)((DefinitionStmt)u).getRightOp(), allocID);
+                        if (((DefinitionStmt)u).getRightOp() instanceof AnyNewExpr) {
+                            allocs.put((AnyNewExpr)((DefinitionStmt)u).getRightOp(), allocID);
                             allocID = 0;
                         }
                     }
@@ -49,17 +49,17 @@ public class DataFlowSolutionToResultOperator {
         }
     }
 
-    public ResultOperator convert(DataFlowSolution<Unit, Map<Object, FlowSet<NewExpr>>> dfs) {
+    public ResultOperator convert(DataFlowSolution<Unit, Map<Object, FlowSet<AnyNewExpr>>> dfs) {
         Map<Integer, ArraySparseSet<Integer>> set = new HashMap<>();
         for (InvokeStmt is: queries.keySet()) {
-            Map<Object, FlowSet<NewExpr>> r = dfs.getValueAfter(is);
+            Map<Object, FlowSet<AnyNewExpr>> r = dfs.getValueAfter(is);
             Pair<Local, Integer> p = queries.get(is);
-            FlowSet<NewExpr> s = r.get(p.getO1());
+            FlowSet<AnyNewExpr> s = r.get(p.getO1());
             if (s == null) {
                 set.put(p.getO2(), new ArraySparseSet<>());
             } else {
                 ArraySparseSet<Integer> iset = new ArraySparseSet<>();
-                for (NewExpr expr : s) {
+                for (AnyNewExpr expr : s) {
                     iset.add(allocs.get(expr));
                 }
                 set.put(p.getO2(), iset);
@@ -68,14 +68,14 @@ public class DataFlowSolutionToResultOperator {
         return new ResultOperator(set);
     }
 
-    public ResultOperator convertLocal(DataFlowSolution<Unit, Map<Local, FlowSet<NewExpr>>> dfs) {
+    public ResultOperator convertLocal(DataFlowSolution<Unit, Map<Local, FlowSet<AnyNewExpr>>> dfs) {
         Map<Integer, ArraySparseSet<Integer>> set = new HashMap<>();
         for (InvokeStmt is: queries.keySet()) {
-            Map<Local, FlowSet<NewExpr>> r = dfs.getValueAfter(is);
+            Map<Local, FlowSet<AnyNewExpr>> r = dfs.getValueAfter(is);
             Pair<Local, Integer> p = queries.get(is);
-            FlowSet<NewExpr> s = r.get(p.getO1());
+            FlowSet<AnyNewExpr> s = r.get(p.getO1());
             ArraySparseSet<Integer> iset = new ArraySparseSet<>();
-            for (NewExpr expr: s) {
+            for (AnyNewExpr expr: s) {
                 iset.add(allocs.get(expr));
             }
             set.put(p.getO2(), iset);

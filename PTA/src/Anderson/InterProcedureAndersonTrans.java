@@ -31,9 +31,9 @@ public class InterProcedureAndersonTrans extends LogPTATransformer {
         analysis = new InterProcedureFieldAnderson();
         analysis.doAnalysis();
         DataFlowSolution<Unit, Map<Object, FlowSet<NewExpr>>> solution = analysis.getMeetOverValidPathsSolution();
-        ResultOperator resultOp = solutionToResultOp.convert(solution);
-        result = resultOp.getResult();
-        System.out.println(resultOp.toString());
+        //ResultOperator resultOp = solutionToResultOp.convert(solution);
+       // result = resultOp.getResult();
+        //System.out.println(resultOp.toString());
     }
 
     public static void main(String args[]) {

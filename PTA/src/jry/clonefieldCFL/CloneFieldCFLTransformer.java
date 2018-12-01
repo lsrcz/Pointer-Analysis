@@ -327,7 +327,7 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                     } else if (right instanceof Constant) {
                     } else if (right instanceof ThisRef || right instanceof BinopExpr || right instanceof UnopExpr) {
                     } else if (right instanceof NewArrayExpr || right instanceof NewMultiArrayExpr) {
-                    } else assert false;
+                    } else ;//assert false;
                 } else
                     assert CallGraphGenerator.resolveTarget(unit).isEmpty();
                 callStack.removeFirst();

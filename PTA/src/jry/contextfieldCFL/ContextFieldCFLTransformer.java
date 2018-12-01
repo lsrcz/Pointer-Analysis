@@ -108,7 +108,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     void tryInsertNewLocalRef(LocalRef localRef) {
         Object root = localRef.root;
         if (usedLocalRef.get(root).contains(localRef)) return;
-        System.out.println("[LocalRef] " + localRef);
+        // System.out.println("[LocalRef] " + localRef);
         usedLocalRef.get(root).add(localRef);
         localRefQueue.add(localRef);
     }
@@ -161,11 +161,11 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
                 }
             }
         }
-        for (Map.Entry<Object, LinkedList<AssignEdge>> entry : assignGraph.entrySet()) {
+        /*for (Map.Entry<Object, LinkedList<AssignEdge>> entry : assignGraph.entrySet()) {
             for (LocalRef localRef : usedLocalRef.get(entry.getKey())) {
                 System.out.println(localRef + " , " + findRoot(localRef));
             }
-        }
+        }*/
 
     }
 
@@ -300,8 +300,8 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
         if (isVisit.contains(sMethod)) return;
         isVisit.add(sMethod);
         Set<SootMethod> callMethods = new HashSet<>();
-        System.out.println("[NewMethod] " + sMethod);
-        System.out.println(sMethod.getActiveBody());
+        //System.out.println("[NewMethod] " + sMethod);
+        //System.out.println(sMethod.getActiveBody());
         if (sMethod.hasActiveBody()) {
             int allocId = 0;
             AllocRef allocRef = new AllocRef(0);

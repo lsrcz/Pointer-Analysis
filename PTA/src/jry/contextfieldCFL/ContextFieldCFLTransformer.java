@@ -222,7 +222,7 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
     void getAllUsedLocalRef(){
         while (!localRefQueue.isEmpty()) {
             LocalRef fir = localRefQueue.remove();
-            //System.out.println("[NewLocalRef] " + fir);
+            System.out.println("[NewLocalRef] " + fir);
             Object root = fir.root;
             for (Object v : localRefFlowGraph.get(root)) {
                 tryInsertNewLocalRef(new LocalRef(v, fir.trace));

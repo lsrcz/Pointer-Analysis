@@ -185,7 +185,7 @@ public class RunDataset {
         Integer ans[] = new Integer[allTransformer.size() + 1];
         List<Integer[]> allRes = new ArrayList<>();
         for (int i = 0; i < ans.length; ++i) ans[i] = 0;
-        int begin = 49;
+        int begin = 1;
         for (int i = 1; i < begin; ++i) {
             allRes.add(new Integer[1]);
         }

@@ -135,7 +135,7 @@ public class Test2{
         Test2Lib.local10.field4 = Test2Lib.local3;
         Test2Lib.local10.field2 = Test2Lib.local6;
         Test2Lib.local10.field1 = Test2Lib.local10;
-        /*if (inputValue>=1) {
+        if (inputValue>=1) {
             for (int local19 = 0; local19<=3; local19 += 1) {
                 Test2Lib.local7.field4=Test2Lib.local7;
             }
@@ -151,7 +151,7 @@ public class Test2{
                 Test2Lib.local5=Test2Lib.local4.field1;
             }
         }
-        Test2Lib.local5=Test2Lib.local5.method3(Test2Lib.local4.field1,3);*/
+        Test2Lib.local5=Test2Lib.local5.method3(Test2Lib.local4.field1,3);
         Benchmark.test(1,Test2Lib.local1);
         Benchmark.test(2,Test2Lib.local2);
         Benchmark.test(3,Test2Lib.local3);

@@ -8,6 +8,7 @@ import soot.jimple.*;
 import soot.jimple.internal.JNewArrayExpr;
 import soot.toolkits.scalar.ArraySparseSet;
 import soot.toolkits.scalar.Pair;
+import utils.AnswerPrinter;
 import vasco.callgraph.CallGraphTransformer;
 
 import java.io.File;
@@ -371,6 +372,8 @@ public class CloneFieldCFLTransformer extends LogPTATransformer {
                 result.get(entry.getKey()).union(graphBuilder.getPointTo(m, -2));
             }
         }
+        ResultOperator resultOp = new ResultOperator(result);
+        AnswerPrinter.printAnswer(resultOp.toString());
     }
 
     public static void main(String args[]) {

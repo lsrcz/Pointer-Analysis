@@ -1,5 +1,6 @@
 package basic;
 
+import jry.util.ResultOperator;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.toolkits.callgraph.ReachableMethods;
@@ -57,6 +58,10 @@ public class BasicProgramTransformer extends LogPTATransformer {
                 set.add(x);
             }
         }
+
+        ResultOperator resultOp = new ResultOperator(result);
+        AnswerPrinter.printAnswer(resultOp.toString());
+
         /*
         String allAllocs = "";
         Iterator<Integer> iterator = allocs.iterator();

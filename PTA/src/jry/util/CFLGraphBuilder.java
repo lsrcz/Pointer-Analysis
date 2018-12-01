@@ -28,7 +28,7 @@ public class CFLGraphBuilder {
             return Id.get(obj);
         } else {
             totalId += 1;
-            //System.out.println("[NewNode] " + totalId + " " + obj + " " + obj.getClass());
+            // System.out.println("[NewNode] " + totalId + " " + obj + " " + obj.getClass());
             /*for (Map.Entry<Object, Integer> entry : Id.entrySet()) {
                 System.out.println(entry.getKey() + " " + entry.getKey().getClass() + " " + entry.getKey().equals(obj));
             }*/
@@ -55,9 +55,10 @@ public class CFLGraphBuilder {
         List<Integer> nodeId = graph.query(graph.getNode(getId(u)), type);
         ArraySparseSet<Integer> resultSet = new ArraySparseSet<>();
         for (Integer id : nodeId) {
+            // System.out.println("Reach " + id);
             if (allocId.containsKey(id)) {
                 resultSet.add(allocId.get(id));
-            } else resultSet.add(0);
+            }
         }
         return resultSet;
     }

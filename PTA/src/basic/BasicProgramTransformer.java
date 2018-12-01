@@ -7,20 +7,21 @@ import soot.toolkits.scalar.ArraySparseSet;
 import soot.util.queue.QueueReader;
 import utils.AnswerPrinter;
 import jry.evaluation.AbstractPTATransformer;
+import jry.evaluation.LogPTATransformer;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class BasicProgramTransformer extends AbstractPTATransformer {
+public class BasicProgramTransformer extends LogPTATransformer {
     private Map<Integer, ArraySparseSet<Integer>> result = new TreeMap<>();
     public Map<Integer, ArraySparseSet<Integer>> getResult() {
         return result;
     }
 
     @Override
-    protected void internalTransform(String s, Map<String, String> map) {
+    protected void myInternalTransform(String s, Map<String, String> map) {
         TreeMap<Integer, Local> queries = new TreeMap<>();
         ReachableMethods reachableMethods = Scene.v().getReachableMethods();
         QueueReader<MethodOrMethodContext> queueReader = reachableMethods.listener();

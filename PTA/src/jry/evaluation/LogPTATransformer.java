@@ -8,7 +8,11 @@ public abstract class LogPTATransformer extends AbstractPTATransformer {
     @Override
     protected void internalTransform(String s, Map<String, String> map) {
         System.out.println("[Start Analyze] " + this.getClass());
-        myInternalTransform(s, map);
+        try {
+            myInternalTransform(s, map);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("[Finish Analyze] " + this.getClass());
     }
 }

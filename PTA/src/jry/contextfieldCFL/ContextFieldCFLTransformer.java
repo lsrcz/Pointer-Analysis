@@ -336,9 +336,9 @@ public class ContextFieldCFLTransformer extends LogPTATransformer {
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
-                    if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
+                    if (ie.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void alloc(int)>")) {
                         allocId = ((IntConstant) ie.getArgs().get(0)).value;
-                    } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
+                    } else if (ie.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void test(int,java.lang.Object)>")) {
                         Local var = (Local) ie.getArgs().get(1);
                         int id = ((IntConstant) ie.getArgs().get(0)).value;
                         queries.put(id, var);

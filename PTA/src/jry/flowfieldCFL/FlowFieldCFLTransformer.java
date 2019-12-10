@@ -47,9 +47,9 @@ public class FlowFieldCFLTransformer extends LogPTATransformer {
             for (Unit unit : sMethod.getActiveBody().getUnits()) {
                 if (unit instanceof InvokeStmt) {
                     InvokeExpr ie = ((InvokeStmt) unit).getInvokeExpr();
-                    if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
+                    if (ie.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void alloc(int)>")) {
                         continue;
-                    } else if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
+                    } else if (ie.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void test(int,java.lang.Object)>")) {
                         continue;
                     } else {
                         List<SootMethod> nextMethods = CallGraphGenerator.resolveTarget(unit);

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="dataset/code"/>
+	<classpathentry kind="src" path="PTA/code/src"/>
+	<classpathentry excluding="test/" kind="src" path="PTA/resources"/>
+	<classpathentry kind="src" path="PTA/resources/test"/>
+	<classpathentry kind="src" path="PTA/src"/>
+	<classpathentry kind="lib" path="PTA.jar"/>
+	<classpathentry kind="lib" path="PTA/out/production/code/jce.jar"/>
+	<classpathentry kind="lib" path="PTA/out/production/code/rt.jar"/>
+	<classpathentry kind="lib" path="PTA/out/production/resources/jce.jar"/>
+	<classpathentry kind="lib" path="PTA/out/production/resources/rt.jar"/>
+	<classpathentry kind="lib" path="PTA/soot-trunk.jar"/>
+	<classpathentry kind="output" path="PTA/out/production/PTA"/>
+</classpath>

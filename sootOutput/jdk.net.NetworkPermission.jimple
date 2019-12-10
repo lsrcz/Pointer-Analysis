@@ -1,0 +1,41 @@
+public final class jdk.net.NetworkPermission extends java.security.BasicPermission
+{
+    private static final long serialVersionUID;
+
+    public void <init>(java.lang.String)
+    {
+        jdk.net.NetworkPermission r0;
+        java.lang.String r1;
+
+        r0 := @this: jdk.net.NetworkPermission;
+
+        r1 := @parameter0: java.lang.String;
+
+        specialinvoke r0.<java.security.BasicPermission: void <init>(java.lang.String)>(r1);
+
+        return;
+    }
+
+    public void <init>(java.lang.String, java.lang.String)
+    {
+        jdk.net.NetworkPermission r0;
+        java.lang.String r1, r2;
+
+        r0 := @this: jdk.net.NetworkPermission;
+
+        r1 := @parameter0: java.lang.String;
+
+        r2 := @parameter1: java.lang.String;
+
+        specialinvoke r0.<java.security.BasicPermission: void <init>(java.lang.String,java.lang.String)>(r1, r2);
+
+        return;
+    }
+
+    public static void <clinit>()
+    {
+        <jdk.net.NetworkPermission: long serialVersionUID> = -2012939586906722291L;
+
+        return;
+    }
+}

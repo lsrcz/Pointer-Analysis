@@ -1,0 +1,28 @@
+public final class jdk.net.ExtendedSocketOptions extends java.lang.Object
+{
+    public static final java.net.SocketOption SO_FLOW_SLA;
+
+    private void <init>()
+    {
+        jdk.net.ExtendedSocketOptions r0;
+
+        r0 := @this: jdk.net.ExtendedSocketOptions;
+
+        specialinvoke r0.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+
+    static void <clinit>()
+    {
+        jdk.net.ExtendedSocketOptions$ExtSocketOption $r0;
+
+        $r0 = new jdk.net.ExtendedSocketOptions$ExtSocketOption;
+
+        specialinvoke $r0.<jdk.net.ExtendedSocketOptions$ExtSocketOption: void <init>(java.lang.String,java.lang.Class)>("SO_FLOW_SLA", class "jdk/net/SocketFlow");
+
+        <jdk.net.ExtendedSocketOptions: java.net.SocketOption SO_FLOW_SLA> = $r0;
+
+        return;
+    }
+}

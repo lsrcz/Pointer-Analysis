@@ -30,10 +30,10 @@ public class DataFlowSolutionToResultOperator {
                 for (Unit u: sm.getActiveBody().getUnits()) {
                     if (u instanceof InvokeStmt) {
                         InvokeExpr ie = ((InvokeStmt) u).getInvokeExpr();
-                        if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
+                        if (ie.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void alloc(int)>")) {
                             allocID = ((IntConstant)ie.getArgs().get(0)).value;
                         }
-                        if (ie.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")) {
+                        if (ie.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void test(int,java.lang.Object)>")) {
                             int id = ((IntConstant)ie.getArgs().get(0)).value;
                             queries.put((InvokeStmt)u, new Pair<>((Local)ie.getArgs().get(1), id));
                         }

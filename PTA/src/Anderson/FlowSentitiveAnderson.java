@@ -26,7 +26,7 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
         for (Unit u: g.getBody().getUnits()) {
             if (u instanceof InvokeStmt) {
                 InvokeExpr expr = ((InvokeStmt)u).getInvokeExpr();
-                if (expr.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")) {
+                if (expr.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void alloc(int)>")) {
                     allocID = ((IntConstant) expr.getArg(0)).value;
                 }
             } else if (u instanceof DefinitionStmt) {
@@ -45,7 +45,7 @@ public class FlowSentitiveAnderson extends ForwardFlowAnalysis<Unit, HashMap<Loc
         for (Unit u: unitToAfterFlow.keySet()) {
             if (u instanceof InvokeStmt) {
                 InvokeExpr expr = ((InvokeStmt)u).getInvokeExpr();
-                if (expr.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")){
+                if (expr.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void test(int,java.lang.Object)>")){
                     Local var = (Local) expr.getArg(1);
                     int queryId = ((IntConstant)expr.getArg(0)).value;
                     System.out.println(var.getName());

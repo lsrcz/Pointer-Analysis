@@ -3,7 +3,7 @@ package test;
 import benchmark.internal.Benchmark;
 import benchmark.objects.A;
 
-public class Hello {
+public class Hello2 {
 
   public static void main(String[] args) {
     Benchmark.alloc(1);

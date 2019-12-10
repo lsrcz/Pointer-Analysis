@@ -55,10 +55,10 @@ public class FieldSensitiveTransformer extends SceneTransformer {
                 for (Unit current: sMethod.getActiveBody().getUnits()) {
                     if (current instanceof InvokeStmt) {
                         InvokeExpr expr = ((InvokeStmt) current).getInvokeExpr();
-                        if (expr.getMethod().toString().equals("<benchmark.internal.Benchmark: void alloc(int)>")){
+                        if (expr.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void alloc(int)>")){
                             allocId = ((IntConstant)expr.getArg(0)).value;
                         }
-                        if (expr.getMethod().toString().equals("<benchmark.internal.Benchmark: void test(int,java.lang.Object)>")){
+                        if (expr.getMethod().toString().equals("<benchmark.internal.BenchmarkN: void test(int,java.lang.Object)>")){
                             Local var = (Local) expr.getArg(1);
                             int queryId = ((IntConstant)expr.getArg(0)).value;
                             queries.put(queryId, var);

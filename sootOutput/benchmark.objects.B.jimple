@@ -1,0 +1,14 @@
+public class benchmark.objects.B extends java.lang.Object
+{
+
+    public void <init>()
+    {
+        benchmark.objects.B this;
+
+        this := @this: benchmark.objects.B;
+
+        specialinvoke this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}

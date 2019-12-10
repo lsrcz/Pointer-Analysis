@@ -1,0 +1,62 @@
+class jdk.net.ExtendedSocketOptions$ExtSocketOption extends java.lang.Object implements java.net.SocketOption
+{
+    private final java.lang.String name;
+    private final java.lang.Class type;
+
+    void <init>(java.lang.String, java.lang.Class)
+    {
+        jdk.net.ExtendedSocketOptions$ExtSocketOption r0;
+        java.lang.String r1;
+        java.lang.Class r2;
+
+        r0 := @this: jdk.net.ExtendedSocketOptions$ExtSocketOption;
+
+        r1 := @parameter0: java.lang.String;
+
+        r2 := @parameter1: java.lang.Class;
+
+        specialinvoke r0.<java.lang.Object: void <init>()>();
+
+        r0.<jdk.net.ExtendedSocketOptions$ExtSocketOption: java.lang.String name> = r1;
+
+        r0.<jdk.net.ExtendedSocketOptions$ExtSocketOption: java.lang.Class type> = r2;
+
+        return;
+    }
+
+    public java.lang.String name()
+    {
+        jdk.net.ExtendedSocketOptions$ExtSocketOption r0;
+        java.lang.String $r1;
+
+        r0 := @this: jdk.net.ExtendedSocketOptions$ExtSocketOption;
+
+        $r1 = r0.<jdk.net.ExtendedSocketOptions$ExtSocketOption: java.lang.String name>;
+
+        return $r1;
+    }
+
+    public java.lang.Class type()
+    {
+        jdk.net.ExtendedSocketOptions$ExtSocketOption r0;
+        java.lang.Class $r1;
+
+        r0 := @this: jdk.net.ExtendedSocketOptions$ExtSocketOption;
+
+        $r1 = r0.<jdk.net.ExtendedSocketOptions$ExtSocketOption: java.lang.Class type>;
+
+        return $r1;
+    }
+
+    public java.lang.String toString()
+    {
+        jdk.net.ExtendedSocketOptions$ExtSocketOption r0;
+        java.lang.String $r1;
+
+        r0 := @this: jdk.net.ExtendedSocketOptions$ExtSocketOption;
+
+        $r1 = r0.<jdk.net.ExtendedSocketOptions$ExtSocketOption: java.lang.String name>;
+
+        return $r1;
+    }
+}

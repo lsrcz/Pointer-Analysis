@@ -1,7 +1,7 @@
 package benchmark.internal;
 
 
-public class Benchmark {
+public class BenchmarkN {
 
 	public static void alloc(int id) {
 

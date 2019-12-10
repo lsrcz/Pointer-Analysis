@@ -39,7 +39,7 @@ public class Main {
                 + File.pathSeparator + dir + File.separator + "jce.jar";
         System.out.println(classpath);
         //String className = args[1];
-
+        
         soot.Main.main(new String[]{
                 "-W",
                 "-O",
@@ -121,10 +121,11 @@ public class Main {
 
     public static void main(String[] args) {
         dir = args[0];
-        //dir = "./resources";
+        dir = "./resources";
         className = args[1];
-        //className = "dataset.Test24";
+        className = "Hello";
         ResultOperator resultOp = null;
+        System.out.println(dir + " " + className);
         optimizeProgram(args);
         runTransformers();
         for (int i = 0; i < trans.length; i++) {
